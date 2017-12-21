@@ -15,8 +15,12 @@ public class LightEventColor2 implements Serializable {
         this.event2 = event2;
     }
 
-    public static int getSize() {
-        return 2 * LightEvent.getSize();
+    public static byte getSize() {
+        return (byte) (2 * LightEventColors.getSize());
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

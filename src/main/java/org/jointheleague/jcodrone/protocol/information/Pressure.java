@@ -18,8 +18,12 @@ public class Pressure implements Serializable {
         this.pressure = pressure;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 16;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

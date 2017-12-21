@@ -18,8 +18,12 @@ public class CountFlight implements Serializable {
         this.countAccident = countAccident;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 14;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

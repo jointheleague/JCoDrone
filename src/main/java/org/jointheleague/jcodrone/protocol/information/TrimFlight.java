@@ -18,8 +18,12 @@ public class TrimFlight implements Serializable {
         this.throttle = throttle;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 8;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

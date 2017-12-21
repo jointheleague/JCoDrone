@@ -15,8 +15,12 @@ public class Command implements Serializable {
         this.option = option;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 2;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

@@ -13,8 +13,12 @@ public class CommandN implements Serializable {
         this.commands = commands;
     }
 
-    public static int getSize() {
-        return NUMBER_OF_COMMANDS * Command.getSize();
+    public static byte getSize() {
+        return (byte) (NUMBER_OF_COMMANDS * Command.getSize());
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

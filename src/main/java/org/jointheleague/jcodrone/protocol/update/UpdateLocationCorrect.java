@@ -12,8 +12,12 @@ public class UpdateLocationCorrect implements Serializable {
         this.indexBlockNext = indexBlockNext;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 2;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

@@ -14,8 +14,12 @@ public class CountDrive implements Serializable {
         this.countAccident = countAccident;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 10;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

@@ -15,8 +15,12 @@ public class LightModeColor2 implements Serializable {
         this.mode2 = mode2;
     }
 
-    public static int getSize() {
-        return 2 * LightModeColor.getSize();
+    public static byte getSize() {
+        return (byte) (2 * LightModeColor.getSize());
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

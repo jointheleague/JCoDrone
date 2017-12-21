@@ -28,8 +28,12 @@ public class IMU implements Serializable {
         this.angleYaw = angleYaw;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 18;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

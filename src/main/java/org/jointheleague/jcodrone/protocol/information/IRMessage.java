@@ -15,8 +15,12 @@ public class IRMessage implements Serializable {
         this.irData = irData;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 5;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

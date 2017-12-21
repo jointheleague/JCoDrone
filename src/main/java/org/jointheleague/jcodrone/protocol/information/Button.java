@@ -12,8 +12,12 @@ public class Button implements Serializable {
         this.button = button;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 1;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

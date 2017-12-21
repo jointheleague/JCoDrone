@@ -12,8 +12,12 @@ public class TrimDrive implements Serializable {
         this.wheel = wheel;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 2;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

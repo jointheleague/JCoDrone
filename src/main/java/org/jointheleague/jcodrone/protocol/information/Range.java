@@ -22,8 +22,12 @@ public class Range implements Serializable {
         this.bottom = bottom;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 12;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

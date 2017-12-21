@@ -8,16 +8,20 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class LightEventCommand implements Serializable {
-    private final LightEvent event;
+    private final LightEventColors event;
     private final Command command;
 
-    public LightEventCommand(LightEvent event, Command command) {
+    public LightEventCommand(LightEventColors event, Command command) {
         this.event = event;
         this.command = command;
     }
 
-    public static int getSize() {
-        return LightEvent.getSize() + Command.getSize();
+    public static byte getSize() {
+        return (byte) (LightEventColors.getSize() + Command.getSize());
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override
@@ -36,11 +40,11 @@ public class LightEventCommand implements Serializable {
 
         ByteBuffer buffer = ByteBuffer.wrap(data);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
-        byte[] eventBuffer = new byte[LightEvent.getSize()];
+        byte[] eventBuffer = new byte[LightEventColors.getSize()];
         byte[] commandBuffer = new byte[Command.getSize()];
-        buffer.get(eventBuffer, 0, LightEvent.getSize());
-        buffer.get(commandBuffer, LightEvent.getSize(), Command.getSize());
-        LightEvent event = LightEvent.parse(eventBuffer);
+        buffer.get(eventBuffer, 0, LightEventColors.getSize());
+        buffer.get(commandBuffer, LightEventColors.getSize(), Command.getSize());
+        LightEventColors event = LightEventColors.parse(eventBuffer);
         Command command = Command.parse(commandBuffer);
         return new LightEventCommand(event, command);
     }

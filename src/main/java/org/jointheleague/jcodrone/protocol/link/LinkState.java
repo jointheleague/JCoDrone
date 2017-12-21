@@ -1,4 +1,4 @@
-package org.jointheleague.jcodrone.protocol.linkStart;
+package org.jointheleague.jcodrone.protocol.link;
 
 import org.jointheleague.jcodrone.protocol.InvalidDataSizeException;
 import org.jointheleague.jcodrone.protocol.Serializable;
@@ -17,8 +17,12 @@ public class LinkState implements Serializable {
         this.broadcast = broadcast;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 2;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

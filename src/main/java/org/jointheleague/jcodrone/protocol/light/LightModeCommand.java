@@ -8,16 +8,20 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class LightModeCommand implements Serializable {
-    private final LightMode mode;
+    private final LightModeColors mode;
     private final Command command;
 
-    public LightModeCommand(LightMode mode, Command command) {
+    public LightModeCommand(LightModeColors mode, Command command) {
         this.mode = mode;
         this.command = command;
     }
 
-    public static int getSize() {
-        return LightMode.getSize() + Command.getSize();
+    public static byte getSize() {
+        return (byte) (LightModeColors.getSize() + Command.getSize());
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override
@@ -36,11 +40,11 @@ public class LightModeCommand implements Serializable {
 
         ByteBuffer buffer = ByteBuffer.wrap(data);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
-        byte[] modeBuffer = new byte[LightMode.getSize()];
+        byte[] modeBuffer = new byte[LightModeColors.getSize()];
         byte[] commandBuffer = new byte[Command.getSize()];
-        buffer.get(modeBuffer, 0, LightMode.getSize());
-        buffer.get(commandBuffer, LightMode.getSize(), Command.getSize());
-        LightMode mode = LightMode.parse(modeBuffer);
+        buffer.get(modeBuffer, 0, LightModeColors.getSize());
+        buffer.get(commandBuffer, LightModeColors.getSize(), Command.getSize());
+        LightModeColors mode = LightModeColors.parse(modeBuffer);
         Command command = Command.parse(commandBuffer);
         return new LightModeCommand(mode, command);
     }

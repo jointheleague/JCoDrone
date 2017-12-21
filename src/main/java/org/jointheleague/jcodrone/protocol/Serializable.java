@@ -1,5 +1,9 @@
 package org.jointheleague.jcodrone.protocol;
 
+import org.jointheleague.jcodrone.CoDrone;
+
 public interface Serializable {
-    public abstract byte[] toArray();
+    byte[] toArray();
+    byte getInstanceSize();
+    default void handle(CoDrone coDrone) {}
 }

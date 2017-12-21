@@ -1,38 +1,60 @@
 package org.jointheleague.jcodrone.protocol;
 
-public class Header implements Serializable {
-    private static final int SIZE = 2;
-    private DataType dataType = DataType.NONE;
-    private int length = 0;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
+public class Header implements Serializable {
+    private DataType dataType;
+    private byte length;
+
+    public Header(DataType dataType, byte length) {
+        this.dataType = dataType;
+        this.length = length;
+    }
+
+    public Header() {
+        this.dataType = DataType.NONE;
+        this.length = 0;
+    }
+
+    public static byte getSize() {
+        return 2;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
+    }
 
     @Override
     public byte[] toArray() {
-        // TODO pack('<BB', self.dataType.value, self.length)
-        return null;
+        ByteBuffer buffer = ByteBuffer.allocate(getSize());
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.put(dataType.value());
+        buffer.put((byte) length);
+        return buffer.array();
     }
 
-    static Header parse(byte[] dataArray) {
-        Header header = new Header();
-        if (dataArray.length != SIZE) {
+    static Header parse(byte[] data) {
+        if (data.length != getSize()) {
             return null;
         }
 
-        //TODO fix
-        //header.dataType, header.length = unpack('<BB', dataArray)
-
-        header.dataType = new DataType(header.dataType);
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        DataType dataType = DataType.fromByte(buffer.get());
+        byte length = buffer.get();
+        return new Header(dataType, length);
     }
 
     public void setDataType(DataType dataType) {
         this.dataType = dataType;
     }
 
-    public void setLength(byte[] length) {
-        this.length = length[0];
+    public void setLength(byte length) {
+        this.length = length;
     }
 
-    public int getLength() {
+    public byte getLength() {
         return length;
     }
 

@@ -21,6 +21,10 @@ public class Message implements Serializable {
         return message.length;
     }
 
+    public byte getInstanceSize() {
+        return (byte) getSize();
+    }
+
     @Override
     public byte[] toArray() {
         ByteBuffer buffer = ByteBuffer.allocate(getSize());

@@ -16,8 +16,12 @@ public class Update implements Serializable {
         this.dataArray = Arrays.copyOf(dataArray, DATA_ARRAY_LENGTH);
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 18;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

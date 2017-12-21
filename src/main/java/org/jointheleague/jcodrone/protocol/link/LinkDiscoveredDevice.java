@@ -1,5 +1,6 @@
-package org.jointheleague.jcodrone.protocol.linkStart;
+package org.jointheleague.jcodrone.protocol.link;
 
+import org.jointheleague.jcodrone.CoDrone;
 import org.jointheleague.jcodrone.protocol.InvalidDataSizeException;
 import org.jointheleague.jcodrone.protocol.Serializable;
 
@@ -22,8 +23,12 @@ public class LinkDiscoveredDevice implements Serializable {
         this.rssi = rssi;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 28;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override
@@ -52,5 +57,22 @@ public class LinkDiscoveredDevice implements Serializable {
         buffer.get(nameBuffer, ADDRESS_LENGTH + 1, NAME_LENGTH);
         byte rssi = buffer.get();
         return new LinkDiscoveredDevice(index, address, new String(nameBuffer), rssi);
+    }
+
+    public byte getRssi() {
+        return rssi;
+    }
+
+    public byte getIndex() {
+        return index;
+    }
+
+    public String getName() {
+        return String.valueOf(name);
+    }
+
+    @Override
+    public void handle(CoDrone coDrone) {
+        coDrone.getLink().addDevice(this);
     }
 }

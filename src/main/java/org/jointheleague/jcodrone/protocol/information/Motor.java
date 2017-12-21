@@ -13,8 +13,12 @@ public class Motor implements Serializable {
         this.motor = motor;
     }
 
-    public static int getSize() {
-        return MotorBlock.getSize() * COUNT_OF_BLOCKS;
+    public static byte getSize() {
+        return (byte) (MotorBlock.getSize() * COUNT_OF_BLOCKS);
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

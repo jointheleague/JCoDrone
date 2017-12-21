@@ -27,8 +27,12 @@ public class UpdateInformation implements Serializable {
         this.day = day;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 11;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

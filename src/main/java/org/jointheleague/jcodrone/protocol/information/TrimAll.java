@@ -14,8 +14,12 @@ public class TrimAll implements Serializable {
         this.trimDrive = trimDrive;
     }
 
-    public static int getSize() {
-        return TrimFlight.getSize() + TrimDrive.getSize();
+    public static byte getSize() {
+        return (byte) (TrimFlight.getSize() + TrimDrive.getSize());
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

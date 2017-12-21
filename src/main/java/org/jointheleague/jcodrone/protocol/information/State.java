@@ -27,8 +27,12 @@ public class State implements Serializable {
         this.battery = battery;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 7;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

@@ -6,19 +6,20 @@ import org.jointheleague.jcodrone.protocol.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class LightModeColor implements Serializable {
-    private final LightModeDrone mode;
+public class LightModeColor extends LightMode {
     private final Color color;
-    private final short interval;
 
     public LightModeColor(LightModeDrone mode, Color color, short interval) {
-        this.mode = mode;
+        super(interval, mode);
         this.color = color;
-        this.interval = interval;
     }
 
-    public static int getSize() {
-        return 1 + Color.getSize() + 1;
+    public static byte getSize() {
+        return (byte) (1 + Color.getSize() + 1);
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

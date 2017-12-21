@@ -14,8 +14,12 @@ public class MotorBlock implements Serializable {
         this.reverse = reverse;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 4;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

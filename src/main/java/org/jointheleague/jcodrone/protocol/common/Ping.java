@@ -13,8 +13,12 @@ public class Ping implements Serializable {
         this.systemTime = systemTime;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 4;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

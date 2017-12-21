@@ -13,8 +13,12 @@ public class UpdateLookupTarget implements Serializable {
         this.deviceType = deviceType;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 4;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

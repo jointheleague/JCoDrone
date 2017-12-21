@@ -1,4 +1,4 @@
-package org.jointheleague.jcodrone.protocol.linkStart;
+package org.jointheleague.jcodrone.protocol.link;
 
 import org.jointheleague.jcodrone.protocol.InvalidDataSizeException;
 import org.jointheleague.jcodrone.protocol.Serializable;
@@ -12,8 +12,12 @@ public class LinkPasscode implements Serializable {
         this.passcode = passcode;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 1;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

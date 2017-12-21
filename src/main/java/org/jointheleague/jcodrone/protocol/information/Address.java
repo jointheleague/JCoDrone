@@ -13,8 +13,12 @@ public class Address implements Serializable {
         this.address = address;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 6;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

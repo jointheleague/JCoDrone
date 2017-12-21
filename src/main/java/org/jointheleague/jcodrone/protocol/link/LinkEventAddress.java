@@ -1,33 +1,28 @@
-package org.jointheleague.jcodrone.protocol.linkStart;
+package org.jointheleague.jcodrone.protocol.link;
 
 import org.jointheleague.jcodrone.protocol.InvalidDataSizeException;
-import org.jointheleague.jcodrone.protocol.Serializable;
 import org.jointheleague.jcodrone.system.EventLink;
 
 import java.nio.ByteBuffer;
 
-public class LinkEventAddress implements Serializable {
+public class LinkEventAddress extends LinkEvent {
 
     private static final int ADDRESS_LENGTH = 6;
-    private final EventLink event;
-    private final byte result;
     private final byte[] address;
 
     public LinkEventAddress(EventLink event, byte result, byte[] address) {
-        this.event = event;
-        this.result = result;
+        super(event, result);
         this.address = address;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 8;
     }
 
     @Override
     public byte[] toArray() {
         ByteBuffer buffer = ByteBuffer.allocate(getSize());
-        buffer.put(event.value());
-        buffer.put(result);
+        buffer.put(super.toArray());
         buffer.put(address);
         return buffer.array();
     }

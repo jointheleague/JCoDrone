@@ -17,8 +17,12 @@ public class Color implements Serializable {
         this.b = b;
     }
 
-    public static int getSize() {
+    public static byte getSize() {
         return 3;
+    }
+
+    public byte getInstanceSize() {
+        return getSize();
     }
 
     @Override

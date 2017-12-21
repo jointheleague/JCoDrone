@@ -10,6 +10,7 @@ import org.jointheleague.jcodrone.protocol.Header;
 import org.jointheleague.jcodrone.protocol.Serializable;
 import org.jointheleague.jcodrone.protocol.common.Command;
 import org.jointheleague.jcodrone.protocol.common.Control;
+import org.jointheleague.jcodrone.protocol.light.LightMode;
 import org.jointheleague.jcodrone.receiver.CRC16;
 import org.jointheleague.jcodrone.receiver.Receiver;
 import org.jointheleague.jcodrone.system.ModeVehicle;
@@ -26,7 +27,7 @@ import java.util.stream.Stream;
 public class CoDrone implements AutoCloseable {
     private static Logger log = LogManager.getLogger(CoDrone.class);
     private final Link link;
-
+    private final LED led;
     private SerialPort comPort;
     private Receiver receiver;
     private Deque<Byte> buffer;
@@ -37,10 +38,10 @@ public class CoDrone implements AutoCloseable {
     private Thread readThread;
     private boolean flightMode;
     private boolean flying;
-
     public CoDrone() {
         receiver = new Receiver(this);
         link = new Link(this);
+        led = new LED(this);
         log.info("CoDrone Setup");
     }
 
@@ -139,7 +140,7 @@ public class CoDrone implements AutoCloseable {
         link.connect(deviceName);
     }
 
-    public byte[] transfer(Header header, Serializable data) {
+    byte[] transfer(Header header, Serializable data) {
         if ((header == null) || (data == null)) {
             log.error("Header or data was null.");
             throw new InvalidMessageException("Header or data is null.");
@@ -165,11 +166,11 @@ public class CoDrone implements AutoCloseable {
         return message.array();
     }
 
-    public byte[] sendCommand(CommandType type) {
+    byte[] sendCommand(CommandType type) {
         return sendCommand(type, (byte) 0);
     }
 
-    public byte[] sendCommand(CommandType type, byte option) {
+    byte[] sendCommand(CommandType type, byte option) {
         Header header = new Header(DataType.COMMAND, Command.getSize());
         Command command = new Command(type, option);
 
@@ -182,9 +183,13 @@ public class CoDrone implements AutoCloseable {
         transfer(header, message);
     }
 
-    public Link getLink() {
+    private Link getLink() {
         return link;
     }
+
+    /**
+     * Flight Commands
+     */
 
     public void setFlightMode() {
         sendCommand(CommandType.MODE_VEHICLE, ModeVehicle.FLIGHT_GUARD.value());
@@ -240,5 +245,12 @@ public class CoDrone implements AutoCloseable {
 
     public boolean isFlying() {
         return flying;
+    }
+
+    /**
+     * LED Commands
+     */
+    public void setLightMode(LightMode mode) {
+        LED.setMode(this, mode);
     }
 }

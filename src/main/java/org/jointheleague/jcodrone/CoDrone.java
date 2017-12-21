@@ -9,8 +9,10 @@ import org.jointheleague.jcodrone.protocol.DataType;
 import org.jointheleague.jcodrone.protocol.Header;
 import org.jointheleague.jcodrone.protocol.Serializable;
 import org.jointheleague.jcodrone.protocol.common.Command;
-import org.jointheleague.jcodrone.protocol.common.Control;
+import org.jointheleague.jcodrone.protocol.light.LightEvent;
+import org.jointheleague.jcodrone.protocol.light.LightEventColors;
 import org.jointheleague.jcodrone.protocol.light.LightMode;
+import org.jointheleague.jcodrone.protocol.light.LightModeColors;
 import org.jointheleague.jcodrone.receiver.CRC16;
 import org.jointheleague.jcodrone.receiver.Receiver;
 import org.jointheleague.jcodrone.system.ModeVehicle;
@@ -27,7 +29,6 @@ import java.util.stream.Stream;
 public class CoDrone implements AutoCloseable {
     private static Logger log = LogManager.getLogger(CoDrone.class);
     private final Link link;
-    private final LED led;
     private SerialPort comPort;
     private Receiver receiver;
     private Deque<Byte> buffer;
@@ -41,7 +42,6 @@ public class CoDrone implements AutoCloseable {
     public CoDrone() {
         receiver = new Receiver(this);
         link = new Link(this);
-        led = new LED(this);
         log.info("CoDrone Setup");
     }
 
@@ -65,7 +65,7 @@ public class CoDrone implements AutoCloseable {
         }
     }
 
-    private void open(String portName) throws Exception {
+    private void open(String portName) {
         log.info("Connect to port: {}", portName);
         comPort = SerialPort.getCommPort(portName);
         comPort.openPort();
@@ -250,7 +250,55 @@ public class CoDrone implements AutoCloseable {
     /**
      * LED Commands
      */
-    public void setLightMode(LightMode mode) {
-        LED.setMode(this, mode);
+    public void lightMode(LightMode mode) {
+        LED.setMode(this, mode, false);
+    }
+
+    public void defaultLightMode(LightMode mode) {
+        LED.setMode(this, mode, true);
+    }
+
+    public void lightModes(LightMode mode1, LightMode mode2) {
+        LED.setMode2(this, mode1, mode2, false);
+    }
+
+    public void defaultLightModes(LightMode mode1, LightMode mode2) {
+        LED.setMode2(this, mode1, mode2, true);
+    }
+
+    public void lightModeWithCommand(LightMode mode, CommandType command, byte commandOption) {
+        if (mode instanceof LightModeColors) {
+            LED.setModeCommand(this, (LightModeColors) mode, command, commandOption);
+        } else {
+            throw new IllegalArgumentException("Commands can only be sent with colors specified by name.");
+        }
+    }
+
+    public void lightModeWithCommandandIR(LightMode mode, CommandType command, byte commandOption, short irData) {
+        if (mode instanceof LightModeColors) {
+            LED.setLightModeCommandIR(this, (LightModeColors) mode, command, commandOption, irData);
+        } else {
+            throw new IllegalArgumentException("Commands can only be sent with colors specified by name.");
+        }
+    }
+
+    public void lightEvent(LightEvent event) {
+        LED.setLightEvent(this, event);
+    }
+
+    public void lightEventWithCommand(LightEvent event, CommandType command, byte commandOption) {
+        if (event instanceof LightEventColors) {
+            LED.setLightEventCommand(this, (LightEventColors) event, command, commandOption);
+        } else {
+            throw new IllegalArgumentException("Commands can only be sent with colors specified by name.");
+        }
+    }
+
+    public void lightEventWithCommandIR(LightEvent event, CommandType command, byte commandOption, short irData) {
+        if (event instanceof LightEventColors) {
+            LED.setLightEventCommandIR(this, (LightEventColors) event, command, commandOption, irData);
+        } else {
+            throw new IllegalArgumentException("Commands can only be sent with colors specified by name.");
+        }
     }
 }

@@ -12,17 +12,21 @@ import org.jointheleague.jcodrone.protocol.light.*;
 public class LED {
     private static Logger log = LogManager.getLogger(LED.class);
 
-    public static void setMode(CoDrone coDrone, LightMode mode) {
-        Header header = new Header(DataType.fromClass(mode.getClass()), mode.getInstanceSize());
+    public static void setMode(CoDrone coDrone, LightMode mode, boolean defaultColor) {
+        DataType dataType = DataType.fromClass(mode.getClass());
+        if (defaultColor) {
+            if (dataType == DataType.LIGHT_MODE_COLOR) {
+                dataType = DataType.LIGHT_MODE_DEFAULT_COLOR;
+            } else {
+                throw new IllegalArgumentException("Default color must be set using RGB.");
+            }
+        }
+        Header header = new Header(dataType, mode.getInstanceSize());
 
         coDrone.transfer(header, mode);
     }
 
-    public static void setMode2(CoDrone coDrone, LightMode mode1, LightMode mode2) {
-        setMode2(coDrone, mode1, mode2, false);
-    }
-
-    private static void setMode2(CoDrone coDrone, LightMode mode1, LightMode mode2, boolean defaultColor) {
+    public static void setMode2(CoDrone coDrone, LightMode mode1, LightMode mode2, boolean defaultColor) {
         Header header;
         DataType dataType;
         Serializable message;
@@ -52,15 +56,6 @@ public class LED {
         coDrone.transfer(header, message);
     }
 
-    public static void setLightModeDefaultColor(CoDrone coDrone, LightModeColor mode) {
-        Header header = new Header(DataType.LIGHT_MODE_DEFAULT_COLOR, LightModeDefaultColor.getSize());
-        coDrone.transfer(header, mode);
-    }
-
-    public static void setLightModeDefaultColor2(CoDrone coDrone, LightModeColor mode1, LightModeColor mode2) {
-        setMode2(coDrone, mode1, mode2, true);
-    }
-
     public static void setModeCommand(CoDrone coDrone, LightModeColors mode, CommandType commandType, byte option) {
         Header header = new Header(DataType.LIGHT_MODE_COMMAND, LightModeCommand.getSize());
         Command command = new Command(commandType, option);
@@ -69,7 +64,7 @@ public class LED {
         coDrone.transfer(header, lightModeCommand);
     }
 
-    public static void setLightModeCommandIr(CoDrone coDrone, LightModeColors mode, CommandType commandType, byte option, short irData) {
+    public static void setLightModeCommandIR(CoDrone coDrone, LightModeColors mode, CommandType commandType, byte option, short irData) {
         Header header = new Header(DataType.LIGHT_MODE_COMMAND_IR, LightModeCommandIR.getSize());
         Command command = new Command(commandType, option);
         LightModeCommandIR lightModeCommandIr = new LightModeCommandIR(mode, command, irData);
@@ -91,7 +86,7 @@ public class LED {
         coDrone.transfer(header, lightEventCommand);
     }
 
-    public static void setLightEventCommandIr(CoDrone coDrone, LightEventColors event, CommandType commandType, byte option, short irData) {
+    public static void setLightEventCommandIR(CoDrone coDrone, LightEventColors event, CommandType commandType, byte option, short irData) {
         Header header = new Header(DataType.LIGHT_EVENT_COMMAND_IR, LightEventCommandIR.getSize());
         Command command = new Command(commandType, option);
 

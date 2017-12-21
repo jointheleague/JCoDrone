@@ -6,8 +6,8 @@ import org.jointheleague.jcodrone.protocol.Serializable;
 import java.nio.ByteBuffer;
 
 public class TrimAll implements Serializable {
-    private final TrimFlight trimFlight;
-    private final TrimDrive trimDrive;
+    private TrimFlight trimFlight;
+    private TrimDrive trimDrive;
 
     public TrimAll(TrimFlight trimFlight, TrimDrive trimDrive) {
         this.trimFlight = trimFlight;
@@ -44,5 +44,21 @@ public class TrimAll implements Serializable {
         TrimDrive trimDrive = TrimDrive.parse(driveBuffer);
         return new TrimAll(trimFlight, trimDrive);
 
+    }
+
+    public TrimDrive getTrimDrive() {
+        return trimDrive;
+    }
+
+    public void setTrimDrive(TrimDrive trimDrive) {
+        this.trimDrive = trimDrive;
+    }
+
+    public TrimFlight getTrimFlight() {
+        return trimFlight;
+    }
+
+    public void setTrimFlight(TrimFlight trimFlight) {
+        this.trimFlight = trimFlight;
     }
 }

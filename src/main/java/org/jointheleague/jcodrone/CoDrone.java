@@ -9,6 +9,7 @@ import org.jointheleague.jcodrone.protocol.DataType;
 import org.jointheleague.jcodrone.protocol.Header;
 import org.jointheleague.jcodrone.protocol.Serializable;
 import org.jointheleague.jcodrone.protocol.common.Command;
+import org.jointheleague.jcodrone.protocol.information.*;
 import org.jointheleague.jcodrone.protocol.light.LightEvent;
 import org.jointheleague.jcodrone.protocol.light.LightEventColors;
 import org.jointheleague.jcodrone.protocol.light.LightMode;
@@ -22,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Deque;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,21 +31,36 @@ public class CoDrone implements AutoCloseable {
     private final Link link;
     private SerialPort comPort;
     private Receiver receiver;
-    private Deque<Byte> buffer;
-    private boolean discoveringDevices;
-    private InputStream in;
     private InputStream inputStream;
     private boolean stopped = true;
     private Thread readThread;
     private boolean flightMode;
     private boolean flying;
+
+    private Address address;
+    private Attitude attitude;
+    private Battery battery;
+    private Button button;
+    private CountDrive countDrive;
+    private CountFlight countFlight;
+    private GyroBias gyroBias;
+    private ImageFlow imageFlow;
+    private IMU imu;
+    private IRMessage irMessage;
+    private Motor motor;
+    private Pressure pressure;
+    private Range range;
+    private State state;
+    private Temperature temperature;
+    private TrimAll trimAll;
+
     public CoDrone() {
         receiver = new Receiver(this);
         link = new Link(this);
         log.info("CoDrone Setup");
     }
 
-    private void open() throws Exception {
+    private void open() {
         log.info("Connect without explicit port.");
         SerialPort[] ports = SerialPort.getCommPorts();
 
@@ -299,6 +314,161 @@ public class CoDrone implements AutoCloseable {
             LED.setLightEventCommandIR(this, (LightEventColors) event, command, commandOption, irData);
         } else {
             throw new IllegalArgumentException("Commands can only be sent with colors specified by name.");
+        }
+    }
+
+    /**
+     * Drone Information
+     */
+    public Address getAddress() {
+        return address;
+    }
+
+    void setAddress(Address address) {
+        this.address = address;
+    }
+
+    public Attitude getAttitude() {
+        return attitude;
+    }
+
+    void setAttitude(Attitude attitude) {
+        this.attitude = attitude;
+    }
+
+    public Battery getBattery() {
+        return battery;
+    }
+
+    void setBattery(Battery battery) {
+        this.battery = battery;
+    }
+
+    public Button getButton() {
+        return button;
+    }
+
+    void setButton(Button button) {
+        this.button = button;
+    }
+
+    public CountDrive getCountDrive() {
+        return countDrive;
+    }
+
+    void setCountDrive(CountDrive countDrive) {
+        this.countDrive = countDrive;
+    }
+
+    public CountFlight getCountFlight() {
+        return countFlight;
+    }
+
+    void setCountFlight(CountFlight countFlight) {
+        this.countFlight = countFlight;
+    }
+
+    public GyroBias getGyroBias() {
+        return gyroBias;
+    }
+
+    void setGyroBias(GyroBias gyroBias) {
+        this.gyroBias = gyroBias;
+    }
+
+    public ImageFlow getImageFlow() {
+        return imageFlow;
+    }
+
+    void setImageFlow(ImageFlow imageFlow) {
+        this.imageFlow = imageFlow;
+    }
+
+    public IMU getImu() {
+        return imu;
+    }
+
+    void setImu(IMU imu) {
+        this.imu = imu;
+    }
+
+    public IRMessage getIrMessage() {
+        return irMessage;
+    }
+
+    void setIrMessage(IRMessage irMessage) {
+        this.irMessage = irMessage;
+    }
+
+    public Motor getMotor() {
+        return motor;
+    }
+
+    void setMotor(Motor motor) {
+        this.motor = motor;
+    }
+
+    public Pressure getPressure() {
+        return pressure;
+    }
+
+    void setPressure(Pressure pressure) {
+        this.pressure = pressure;
+    }
+
+    public Range getRange() {
+        return range;
+    }
+
+    void setRange(Range range) {
+        this.range = range;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    void setState(State state) {
+        this.state = state;
+    }
+
+    public Temperature getTemperature() {
+        return temperature;
+    }
+
+    void setTemperature(Temperature temperature) {
+        this.temperature = temperature;
+    }
+
+    public TrimAll getTrimAll() {
+        return trimAll;
+    }
+
+    void setTrimAll(TrimAll trimAll) {
+        this.trimAll = trimAll;
+    }
+
+    public TrimDrive getTrimDrive() {
+        return trimAll.getTrimDrive();
+    }
+
+    void setTrimDrive(TrimDrive trimDrive) {
+        if (trimAll == null) {
+            trimAll = new TrimAll(null, trimDrive);
+        } else {
+            trimAll.setTrimDrive(trimDrive);
+        }
+    }
+
+    public TrimFlight getTrimFlight() {
+        return trimAll.getTrimFlight();
+    }
+
+    void setTrimFlight(TrimFlight trimFlight) {
+        if (trimAll == null) {
+            trimAll = new TrimAll(trimFlight, null);
+        } else {
+            trimAll.setTrimFlight(trimFlight);
         }
     }
 }

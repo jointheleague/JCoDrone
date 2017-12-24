@@ -2,7 +2,6 @@ package org.jointheleague.jcodrone;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jointheleague.jcodrone.protocol.CommandType;
 import org.jointheleague.jcodrone.protocol.information.Address;
 import org.jointheleague.jcodrone.protocol.link.LinkDiscoveredDevice;
 import org.jointheleague.jcodrone.system.ModeLinkBroadcast;

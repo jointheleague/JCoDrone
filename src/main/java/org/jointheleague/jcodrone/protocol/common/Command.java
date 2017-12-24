@@ -1,6 +1,6 @@
 package org.jointheleague.jcodrone.protocol.common;
 
-import org.jointheleague.jcodrone.protocol.CommandType;
+import org.jointheleague.jcodrone.CommandType;
 import org.jointheleague.jcodrone.protocol.InvalidDataSizeException;
 import org.jointheleague.jcodrone.protocol.Serializable;
 

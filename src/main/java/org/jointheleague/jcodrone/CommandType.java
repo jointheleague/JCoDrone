@@ -1,4 +1,4 @@
-package org.jointheleague.jcodrone.protocol;
+package org.jointheleague.jcodrone;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,15 +38,15 @@ public enum CommandType {
     UPDATE_COMPLETE_SUB((byte) 0x90),
     CLEAR_UPDATE_AREA_MAIN((byte) 0x90),
 
-    // LINK 모듈
-    LINK_MODE_BROADCAST((byte) 0xE0),  // LINK 송수신 모드 전환
-    LINK_SYSTEM_RESET((byte) 0xE1),  // 시스템 재시작
-    LINK_DISCOVER_START((byte) 0xE2),  // 장치 검색 시작
-    LINK_DISCOVER_STOP((byte) 0xE3),  // 장치 검색 중단
-    LINK_CONNECT((byte) 0xE4),  // 지정한 인덱스의 장치 연결
-    LINK_DISCONNECT((byte) 0xE5),  // 연결 해제
-    LINK_RSSI_POLLING_START((byte) 0xE6),  // RSSI 수집 시작
-    LINK_RSSI_POLLING_STOP((byte) 0xE7),  // RSSI 수집 중단
+    // Link
+    LINK_MODE_BROADCAST((byte) 0xE0),
+    LINK_SYSTEM_RESET((byte) 0xE1),
+    LINK_DISCOVER_START((byte) 0xE2),
+    LINK_DISCOVER_STOP((byte) 0xE3),
+    LINK_CONNECT((byte) 0xE4),
+    LINK_DISCONNECT((byte) 0xE5),
+    LINK_RSSI_POLLING_START((byte) 0xE6),
+    LINK_RSSI_POLLING_STOP((byte) 0xE7),
 
     END_OF_TYPE((byte) 0xFF);
 

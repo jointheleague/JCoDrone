@@ -9,6 +9,7 @@ import org.jointheleague.jcodrone.protocol.Serializable;
 import org.jointheleague.jcodrone.system.*;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class State implements Serializable {
     private final ModeVehicle modeVehicle;
@@ -79,5 +80,14 @@ public class State implements Serializable {
     @Override
     public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
         internals.setState(this);
+    }
+
+    public boolean isFlightMode() {
+        return Arrays.asList(
+                new ModeVehicle[]{
+                        ModeVehicle.FLIGHT_FPV,
+                        ModeVehicle.FLIGHT_NO_GUARD,
+                        ModeVehicle.FLIGHT_GUARD}
+        ).contains(modeVehicle);
     }
 }

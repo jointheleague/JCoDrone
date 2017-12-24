@@ -2,11 +2,8 @@ package org.jointheleague.jcodrone;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jointheleague.jcodrone.protocol.CommandType;
 import org.jointheleague.jcodrone.protocol.common.Control;
 import org.jointheleague.jcodrone.system.FlightEvent;
-
-import java.util.Optional;
 
 public class Flight {
     private static Logger log = LogManager.getLogger(Flight.class);
@@ -62,7 +59,7 @@ public class Flight {
     }
 
     private static void sendInFlightEvent(CoDrone coDrone, FlightEvent event) {
-        if (coDrone.isFlying()) {
+        if (true) { //coDrone.isFlying()) { TODO: Determine if drone is flying.
             sendFlightEvent(coDrone, event);
         } else {
             log.error("Event {} can only be sent while flying.", event);

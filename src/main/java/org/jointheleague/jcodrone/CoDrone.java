@@ -4,7 +4,6 @@ package org.jointheleague.jcodrone;
 import com.fazecast.jSerialComm.SerialPort;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jointheleague.jcodrone.protocol.CommandType;
 import org.jointheleague.jcodrone.protocol.DataType;
 import org.jointheleague.jcodrone.protocol.Header;
 import org.jointheleague.jcodrone.protocol.Serializable;
@@ -26,6 +25,9 @@ import java.nio.ByteOrder;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * A CoDrone object provides the state of the drone and the methods required to control the drone.
+ */
 public class CoDrone implements AutoCloseable {
     private static Logger log = LogManager.getLogger(CoDrone.class);
     private final Link link;
@@ -36,9 +38,11 @@ public class CoDrone implements AutoCloseable {
     private InputStream inputStream;
     private boolean stopped = true;
     private Thread readThread;
-    private boolean flightMode;
-    private boolean flying;
 
+    /**
+     * The default constructor establishes creates an unassigned drone object that can be connected to any
+     * drone.
+     */
     public CoDrone() {
         link = new Link(this);
         sensors = new Sensors(this);
@@ -74,22 +78,19 @@ public class CoDrone implements AutoCloseable {
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 100, 0);
         inputStream = comPort.getInputStream();
 
-        readThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                int errorCount = 0;
-                stopped = false;
-                while (!stopped) {
-                    try {
-                        receiver.call((byte) inputStream.read());
-                        errorCount = 0;
-                    } catch (IOException e) {
-                        errorCount++;
-                        if (!stopped) {
-                            log.error("Error reading from serial port.", e);
-                            if (errorCount > 5) {
-                                log.error("Repeated communication errors, closing port.");
-                            }
+        readThread = new Thread(() -> {
+            int errorCount = 0;
+            stopped = false;
+            while (!stopped) {
+                try {
+                    receiver.call((byte) inputStream.read());
+                    errorCount = 0;
+                } catch (IOException e) {
+                    errorCount++;
+                    if (!stopped) {
+                        log.error("Error reading from serial port.", e);
+                        if (errorCount > 5) {
+                            log.error("Repeated communication errors, closing port.");
                         }
                     }
                 }
@@ -98,11 +99,21 @@ public class CoDrone implements AutoCloseable {
         readThread.start();
     }
 
+    /**
+     * Closes the serial connection to the controller.
+     * <p>
+     * This method will attempt to gracefully close the thread reading from the serial port before interrupting it to
+     * release the port.
+     */
     @Override
-    public void close() throws Exception {
+    public void close() {
         log.info("Closing serial port.");
         stopped = true;
-        readThread.join(200);
+        try {
+            readThread.join(200);
+        } catch (InterruptedException e) {
+            log.info("Join to serial port reading thread was interrupted.");
+        }
         if (readThread.isAlive()) {
             log.warn("Interrupting serial communication");
             readThread.interrupt();
@@ -111,14 +122,30 @@ public class CoDrone implements AutoCloseable {
         log.info("Port {} closed", comPort.getSystemPortName());
     }
 
-    public void connect() throws Exception {
+    /**
+     * The default connection method connects to the nearest drone connected to the last available serial port
+     * enumerated by the operating system.
+     *
+     * @throws CoDroneNotFoundException Thrown if no drone is found. Check logs to determine what serial port was used.
+     */
+    public void connect() throws CoDroneNotFoundException {
         connect(null, null, false);
     }
 
-    public void connect(String portName, String deviceName, boolean resetSystem) throws Exception {
+    /**
+     * This connect method allows the connection to a specific drone over bluetooth via the controller connected
+     * to the specified serial por. Additionally the controller can be reset before the connection is attempted.
+     *
+     * @param portName    System name of the serial port connected to the controller.
+     * @param deviceName  The name of the drone to connect to.
+     * @param resetSystem Resets the controller before attempting to connect to the drone.
+     * @throws CoDroneNotFoundException Thrown if the specified port or drone can not be found.
+     */
+    @SuppressWarnings("WeakerAccess")
+    public void connect(String portName, String deviceName, boolean resetSystem) throws CoDroneNotFoundException {
         if (deviceName != null && !deviceName.isEmpty() && deviceName.length() != 12) {
-            throw new IllegalAccessException(
-                    String.format("Invalid device name length {}.", deviceName.length()));
+            throw new IllegalArgumentException(
+                    String.format("Invalid device name length %s.", deviceName.length()));
         }
 
         if (comPort == null || !comPort.isOpen()) {
@@ -142,7 +169,7 @@ public class CoDrone implements AutoCloseable {
         link.connect(deviceName);
     }
 
-    byte[] transfer(Header header, Serializable data) {
+    void transfer(Header header, Serializable data) {
         if ((header == null) || (data == null)) {
             log.error("Header or data was null.");
             throw new InvalidMessageException("Header or data is null.");
@@ -165,105 +192,206 @@ public class CoDrone implements AutoCloseable {
 
         comPort.writeBytes(message.array(), message.capacity());
         log.info("Sent: {}", DatatypeConverter.printHexBinary(message.array()));
-        return message.array();
     }
 
-    byte[] sendCommand(CommandType type) {
-        return sendCommand(type, (byte) 0);
+    /**
+     * Sends a command to the drone.
+     * <p>
+     * Note: Most of the commands available to be sent are internally used. Care should be taken when directly sending
+     * commands to determine what side effects may occur. Please refer to any separate drone documentation for the use
+     * of commands.
+     *
+     * @param type The command from the CommandType enumeration.
+     */
+    public void sendCommand(CommandType type) {
+        sendCommand(type, (byte) 0);
     }
 
-    byte[] sendCommand(CommandType type, byte option) {
-        Header header = new Header(DataType.COMMAND, Command.getSize());
+    /**
+     * Sends a command with a parameter to the drone.
+     * <p>
+     * Note: Most of the commands available to be sent are internally used. Care should be taken when directly sending
+     * commands to determine what side effects may occur. Please refer to any separate drone documentation for the use
+     * of commands.
+     *
+     * @param type The command from the CommandType enumeration.
+     */
+    public void sendCommand(CommandType type, byte option) {
         Command command = new Command(type, option);
 
-        return transfer(header, command);
+        sendMessage(command);
     }
 
-    public void sendMessage(Serializable message) {
+    @SuppressWarnings("unused")
+    void sendMessage(Serializable message) {
         Header header = new Header(DataType.fromClass(message.getClass()), message.getInstanceSize());
 
         transfer(header, message);
     }
 
     /**
-     * Flight Commands
+     * Sends a command to set the drone's mode to flight mode with guard installed.
      */
-
+    @SuppressWarnings("unused")
     public void setFlightMode() {
         sendCommand(CommandType.MODE_VEHICLE, ModeVehicle.FLIGHT_GUARD.value());
     }
 
+    /**
+     * Sends a command to set the drone's mode to flight mode with no guard installed.
+     */
+    @SuppressWarnings("unused")
+    public void setFlightModeNoGuard() {
+        sendCommand(CommandType.MODE_VEHICLE, ModeVehicle.FLIGHT_NO_GUARD.value());
+    }
+
+    /**
+     * Sends a command to set the drone's mode to flight mode with camera installed.
+     */
+    @SuppressWarnings("unused")
+    public void setFlightModeFPV() {
+        sendCommand(CommandType.MODE_VEHICLE, ModeVehicle.FLIGHT_FPV.value());
+    }
+
+    /**
+     * Sends a command to set the drone's mode to drive mode.
+     */
+    @SuppressWarnings("unused")
     public void setDriveMode() {
         sendCommand(CommandType.MODE_VEHICLE, ModeVehicle.DRIVE.value());
     }
 
+    /**
+     * Sends a command to make the drone take off.
+     */
+    @SuppressWarnings("unused")
     public void takeoff() {
         Flight.takeoff(this);
     }
 
+    /**
+     * Sends a command to make the drone land.
+     */
+    @SuppressWarnings("unused")
     public void land() {
         Flight.land(this);
     }
 
+    /**
+     * Sends a command to make the drone do a front flip in flight.
+     */
+    @SuppressWarnings("unused")
     public void flipFront() {
         Flight.flipFront(this);
     }
 
+    /**
+     * Sends a command to make the drone do a back flip in flight.
+     */
+    @SuppressWarnings("unused")
     public void flipRear() {
         Flight.flipRear(this);
     }
 
+    /**
+     * Sends a command to make the drone do a left flip in flight.
+     */
+    @SuppressWarnings("unused")
     public void flipLeft() {
         Flight.flipLeft(this);
     }
 
+    /**
+     * Sends a command to make the drone do a right flip in flight.
+     */
+    @SuppressWarnings("unused")
     public void flipRight() {
         Flight.flipRight(this);
     }
 
+    /**
+     * Sends a command to make the drone stop the motors. This command should be used to implement a kill switch.
+     */
+    @SuppressWarnings("unused")
     public void stop() {
         Flight.stop(this);
     }
 
+    /**
+     * Sends a command to make the drone turn over. I have seen notes that imply this method is used when the drone
+     * is not flying and is sitting upside down after a crash to right it. Testing is required.
+     */
+    @SuppressWarnings("unused")
     public void turnOver() {
         Flight.turnOver(this);
     }
 
+    /**
+     * This command is including in the protocol and possibly sends a preconfigured IR message.
+     */
+    @SuppressWarnings("unused")
     public void shoot() {
         Flight.shoot(this);
     }
 
+    /**
+     * It is unknown at this time the effect of sending this command.
+     */
+    @SuppressWarnings("unused")
     public void underAttack() {
         Flight.underAttack(this);
     }
 
-    public boolean isFlightMode() {
-        return flightMode;
-    }
-
-    public boolean isFlying() {
-        return flying;
-    }
-
     /**
-     * LED Commands
+     * Sets a single light mode.
+     *
+     * @param mode A light mode created using the light mode builder.
      */
+    @SuppressWarnings("unused")
     public void lightMode(LightMode mode) {
         LED.setMode(this, mode, false);
     }
 
+    /**
+     * Sets a single default light mode.
+     *
+     * @param mode A light mode created using the light mode builder.
+     */
+    @SuppressWarnings("unused")
     public void defaultLightMode(LightMode mode) {
         LED.setMode(this, mode, true);
     }
 
+    /**
+     * Sets two light modes.
+     *
+     * @param mode1 First light mode created using the light mode builder.
+     * @param mode2 Second light mode created using the light mode builder.
+     */
+    @SuppressWarnings("unused")
     public void lightModes(LightMode mode1, LightMode mode2) {
         LED.setMode2(this, mode1, mode2, false);
     }
 
+    /**
+     * Sets two default light modes.
+     *
+     * @param mode1 First light mode created using the light mode builder.
+     * @param mode2 Second light mode created using the light mode builder.
+     */
+    @SuppressWarnings("unused")
     public void defaultLightModes(LightMode mode1, LightMode mode2) {
         LED.setMode2(this, mode1, mode2, true);
     }
 
+    /**
+     * Sets a single light mode and sends a command with an option.
+     *
+     * @param mode          Light mode created using the light mode builder.
+     * @param command       Command from the command type enumeration.
+     * @param commandOption Parameter specific to the command sent.
+     */
+    @SuppressWarnings("unused")
     public void lightModeWithCommand(LightMode mode, CommandType command, byte commandOption) {
         if (mode instanceof LightModeColors) {
             LED.setModeCommand(this, (LightModeColors) mode, command, commandOption);
@@ -272,6 +400,14 @@ public class CoDrone implements AutoCloseable {
         }
     }
 
+    /**
+     * Sets a single light mode, sends a command with an option and includes IR data.
+     * @param mode Light mode created using the light mode builder.
+     * @param command Command from the command type enumeration.
+     * @param commandOption Parameter specific to the command sent.
+     * @param irData Data to be sent for ir message.
+     */
+    @SuppressWarnings("unused")
     public void lightModeWithCommandandIR(LightMode mode, CommandType command, byte commandOption, short irData) {
         if (mode instanceof LightModeColors) {
             LED.setLightModeCommandIR(this, (LightModeColors) mode, command, commandOption, irData);
@@ -326,6 +462,7 @@ public class CoDrone implements AutoCloseable {
     public CountFlight getCountFlight() {
         return internals.getCountFlight();
     }
+
     public GyroBias getGyroBias() {
         return sensors.getGyroBias();
     }
@@ -374,4 +511,7 @@ public class CoDrone implements AutoCloseable {
         return internals.getTrimFlight();
     }
 
+    public boolean isFlightMode() {
+        return internals.getState().isFlightMode();
+    }
 }

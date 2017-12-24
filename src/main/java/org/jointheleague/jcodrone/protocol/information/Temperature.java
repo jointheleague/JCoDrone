@@ -1,5 +1,9 @@
 package org.jointheleague.jcodrone.protocol.information;
 
+import org.jointheleague.jcodrone.CoDrone;
+import org.jointheleague.jcodrone.Internals;
+import org.jointheleague.jcodrone.Link;
+import org.jointheleague.jcodrone.Sensors;
 import org.jointheleague.jcodrone.protocol.InvalidDataSizeException;
 import org.jointheleague.jcodrone.protocol.Serializable;
 
@@ -39,5 +43,10 @@ public class Temperature implements Serializable {
         int imu = buffer.getInt();
         int pressure = buffer.getInt();
         return new Temperature(imu, pressure);
+    }
+
+    @Override
+    public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
+        sensors.setTemperature(this);
     }
 }

@@ -1,7 +1,9 @@
 package org.jointheleague.jcodrone.protocol.link;
 
 import org.jointheleague.jcodrone.CoDrone;
+import org.jointheleague.jcodrone.Internals;
 import org.jointheleague.jcodrone.Link;
+import org.jointheleague.jcodrone.Sensors;
 import org.jointheleague.jcodrone.protocol.InvalidDataSizeException;
 import org.jointheleague.jcodrone.protocol.Serializable;
 import org.jointheleague.jcodrone.system.EventLink;
@@ -44,8 +46,7 @@ public class LinkEvent implements Serializable {
         return new LinkEvent(event, result);
     }
 
-    public void handle(CoDrone coDrone) {
-        Link link = coDrone.getLink();
+    public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
         switch (event) {
             case SCANNING:
                 link.clearDevices();

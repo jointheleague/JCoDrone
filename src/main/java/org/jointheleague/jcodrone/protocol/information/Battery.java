@@ -1,5 +1,9 @@
 package org.jointheleague.jcodrone.protocol.information;
 
+import org.jointheleague.jcodrone.CoDrone;
+import org.jointheleague.jcodrone.Internals;
+import org.jointheleague.jcodrone.Link;
+import org.jointheleague.jcodrone.Sensors;
 import org.jointheleague.jcodrone.protocol.InvalidDataSizeException;
 import org.jointheleague.jcodrone.protocol.Serializable;
 
@@ -58,10 +62,15 @@ public class Battery implements Serializable {
         short adjustYIntercept = buffer.getShort();
         short gradient = buffer.getShort();
         short yIntercept = buffer.getShort();
-        boolean flagBatteryCalibration = buffer.get() == 0 ? false : true;
+        boolean flagBatteryCalibration = buffer.get() != 0;
         int batteryRaw = buffer.getInt();
         byte batteryPercent = buffer.get();
         short voltage = buffer.getShort();
         return new Battery(adjustGradient, adjustYIntercept, gradient, yIntercept, flagBatteryCalibration, batteryRaw, batteryPercent, voltage);
+    }
+
+    @Override
+    public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
+        internals.setBattery(this);
     }
 }

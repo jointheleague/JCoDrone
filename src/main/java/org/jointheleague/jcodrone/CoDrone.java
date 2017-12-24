@@ -29,6 +29,8 @@ import java.util.stream.Stream;
 public class CoDrone implements AutoCloseable {
     private static Logger log = LogManager.getLogger(CoDrone.class);
     private final Link link;
+    private final Sensors sensors;
+    private final Internals internals;
     private SerialPort comPort;
     private Receiver receiver;
     private InputStream inputStream;
@@ -37,26 +39,11 @@ public class CoDrone implements AutoCloseable {
     private boolean flightMode;
     private boolean flying;
 
-    private Address address;
-    private Attitude attitude;
-    private Battery battery;
-    private Button button;
-    private CountDrive countDrive;
-    private CountFlight countFlight;
-    private GyroBias gyroBias;
-    private ImageFlow imageFlow;
-    private IMU imu;
-    private IRMessage irMessage;
-    private Motor motor;
-    private Pressure pressure;
-    private Range range;
-    private State state;
-    private Temperature temperature;
-    private TrimAll trimAll;
-
     public CoDrone() {
-        receiver = new Receiver(this);
         link = new Link(this);
+        sensors = new Sensors(this);
+        internals = new Internals(this);
+        receiver = new Receiver(this, link, sensors, internals);
         log.info("CoDrone Setup");
     }
 
@@ -198,10 +185,6 @@ public class CoDrone implements AutoCloseable {
         transfer(header, message);
     }
 
-    private Link getLink() {
-        return link;
-    }
-
     /**
      * Flight Commands
      */
@@ -321,154 +304,74 @@ public class CoDrone implements AutoCloseable {
      * Drone Information
      */
     public Address getAddress() {
-        return address;
-    }
-
-    void setAddress(Address address) {
-        this.address = address;
+        return link.getAddress();
     }
 
     public Attitude getAttitude() {
-        return attitude;
-    }
-
-    void setAttitude(Attitude attitude) {
-        this.attitude = attitude;
+        return sensors.getAttitude();
     }
 
     public Battery getBattery() {
-        return battery;
-    }
-
-    void setBattery(Battery battery) {
-        this.battery = battery;
+        return internals.getBattery();
     }
 
     public Button getButton() {
-        return button;
-    }
-
-    void setButton(Button button) {
-        this.button = button;
+        return internals.getButton();
     }
 
     public CountDrive getCountDrive() {
-        return countDrive;
-    }
-
-    void setCountDrive(CountDrive countDrive) {
-        this.countDrive = countDrive;
+        return internals.getCountDrive();
     }
 
     public CountFlight getCountFlight() {
-        return countFlight;
+        return internals.getCountFlight();
     }
-
-    void setCountFlight(CountFlight countFlight) {
-        this.countFlight = countFlight;
-    }
-
     public GyroBias getGyroBias() {
-        return gyroBias;
-    }
-
-    void setGyroBias(GyroBias gyroBias) {
-        this.gyroBias = gyroBias;
+        return sensors.getGyroBias();
     }
 
     public ImageFlow getImageFlow() {
-        return imageFlow;
-    }
-
-    void setImageFlow(ImageFlow imageFlow) {
-        this.imageFlow = imageFlow;
+        return sensors.getImageFlow();
     }
 
     public IMU getImu() {
-        return imu;
-    }
-
-    void setImu(IMU imu) {
-        this.imu = imu;
+        return sensors.getImu();
     }
 
     public IRMessage getIrMessage() {
-        return irMessage;
-    }
-
-    void setIrMessage(IRMessage irMessage) {
-        this.irMessage = irMessage;
+        return internals.getIrMessage();
     }
 
     public Motor getMotor() {
-        return motor;
-    }
-
-    void setMotor(Motor motor) {
-        this.motor = motor;
+        return internals.getMotor();
     }
 
     public Pressure getPressure() {
-        return pressure;
-    }
-
-    void setPressure(Pressure pressure) {
-        this.pressure = pressure;
+        return sensors.getPressure();
     }
 
     public Range getRange() {
-        return range;
-    }
-
-    void setRange(Range range) {
-        this.range = range;
+        return sensors.getRange();
     }
 
     public State getState() {
-        return state;
-    }
-
-    void setState(State state) {
-        this.state = state;
+        return internals.getState();
     }
 
     public Temperature getTemperature() {
-        return temperature;
-    }
-
-    void setTemperature(Temperature temperature) {
-        this.temperature = temperature;
+        return sensors.getTemperature();
     }
 
     public TrimAll getTrimAll() {
-        return trimAll;
-    }
-
-    void setTrimAll(TrimAll trimAll) {
-        this.trimAll = trimAll;
+        return internals.getTrimAll();
     }
 
     public TrimDrive getTrimDrive() {
-        return trimAll.getTrimDrive();
-    }
-
-    void setTrimDrive(TrimDrive trimDrive) {
-        if (trimAll == null) {
-            trimAll = new TrimAll(null, trimDrive);
-        } else {
-            trimAll.setTrimDrive(trimDrive);
-        }
+        return internals.getTrimDrive();
     }
 
     public TrimFlight getTrimFlight() {
-        return trimAll.getTrimFlight();
+        return internals.getTrimFlight();
     }
 
-    void setTrimFlight(TrimFlight trimFlight) {
-        if (trimAll == null) {
-            trimAll = new TrimAll(trimFlight, null);
-        } else {
-            trimAll.setTrimFlight(trimFlight);
-        }
-    }
 }

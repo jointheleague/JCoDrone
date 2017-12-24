@@ -1,5 +1,9 @@
 package org.jointheleague.jcodrone.protocol.information;
 
+import org.jointheleague.jcodrone.CoDrone;
+import org.jointheleague.jcodrone.Internals;
+import org.jointheleague.jcodrone.Link;
+import org.jointheleague.jcodrone.Sensors;
 import org.jointheleague.jcodrone.protocol.InvalidDataSizeException;
 import org.jointheleague.jcodrone.protocol.Serializable;
 
@@ -67,5 +71,10 @@ public class IMU implements Serializable {
         short anglePitch = buffer.getShort();
         short angleYaw = buffer.getShort();
         return new IMU(accelX, accelY, accelZ, gyroRoll, gyroPitch, gyroYaw, angleRoll, anglePitch, angleYaw);
+    }
+
+    @Override
+    public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
+        sensors.setImu(this);
     }
 }

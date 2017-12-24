@@ -3,6 +3,7 @@ package org.jointheleague.jcodrone;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jointheleague.jcodrone.protocol.CommandType;
+import org.jointheleague.jcodrone.protocol.information.Address;
 import org.jointheleague.jcodrone.protocol.link.LinkDiscoveredDevice;
 import org.jointheleague.jcodrone.system.ModeLinkBroadcast;
 
@@ -14,6 +15,7 @@ public class Link {
     private static Logger log = LogManager.getLogger(Link.class);
     private final CoDrone codrone;
 
+    private Address address;
     private ArrayList<LinkDiscoveredDevice> devices;
     private boolean discoveringDevices;
     private boolean connected;
@@ -138,5 +140,9 @@ public class Link {
 
     public void addDevice(LinkDiscoveredDevice device) {
         devices.add(device);
+    }
+
+    public Address getAddress() {
+        return address;
     }
 }

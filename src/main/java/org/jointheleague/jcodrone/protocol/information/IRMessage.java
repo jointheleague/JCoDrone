@@ -1,5 +1,9 @@
 package org.jointheleague.jcodrone.protocol.information;
 
+import org.jointheleague.jcodrone.CoDrone;
+import org.jointheleague.jcodrone.Internals;
+import org.jointheleague.jcodrone.Link;
+import org.jointheleague.jcodrone.Sensors;
 import org.jointheleague.jcodrone.protocol.InvalidDataSizeException;
 import org.jointheleague.jcodrone.protocol.Serializable;
 import org.jointheleague.jcodrone.system.Direction;
@@ -40,5 +44,10 @@ public class IRMessage implements Serializable {
         Direction direction = Direction.fromByte(buffer.get());
         int irData = buffer.getInt();
         return new IRMessage(direction, irData);
+    }
+
+    @Override
+    public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
+        internals.setIrMessage(this);
     }
 }

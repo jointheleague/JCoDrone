@@ -1,5 +1,9 @@
 package org.jointheleague.jcodrone.protocol.information;
 
+import org.jointheleague.jcodrone.CoDrone;
+import org.jointheleague.jcodrone.Internals;
+import org.jointheleague.jcodrone.Link;
+import org.jointheleague.jcodrone.Sensors;
 import org.jointheleague.jcodrone.protocol.InvalidDataSizeException;
 import org.jointheleague.jcodrone.protocol.Serializable;
 
@@ -60,5 +64,10 @@ public class TrimAll implements Serializable {
 
     public void setTrimFlight(TrimFlight trimFlight) {
         this.trimFlight = trimFlight;
+    }
+
+    @Override
+    public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
+        internals.setTrimAll(this);
     }
 }

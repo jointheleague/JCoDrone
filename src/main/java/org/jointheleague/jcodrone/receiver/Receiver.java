@@ -3,6 +3,9 @@ package org.jointheleague.jcodrone.receiver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jointheleague.jcodrone.CoDrone;
+import org.jointheleague.jcodrone.Internals;
+import org.jointheleague.jcodrone.Link;
+import org.jointheleague.jcodrone.Sensors;
 import org.jointheleague.jcodrone.protocol.DataType;
 import org.jointheleague.jcodrone.protocol.Serializable;
 
@@ -12,11 +15,12 @@ import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static java.time.Instant.now;
-
 public class Receiver {
     static Logger log = LogManager.getLogger(Receiver.class);
     public final CoDrone coDrone;
+    private final Link link;
+    private final Sensors sensors;
+    private final Internals internals;
 
     private StateMap state;
     private ByteBuffer buffer;
@@ -26,8 +30,11 @@ public class Receiver {
     private Timer timer;
 
 
-    public Receiver(CoDrone coDrone) {
+    public Receiver(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
         this.coDrone = coDrone;
+        this.link = link;
+        this.sensors = sensors;
+        this.internals = internals;
         this.state = StateMap.START1;
     }
 
@@ -79,7 +86,7 @@ public class Receiver {
             log.error("Data type {} can not be parsed.", dataType, e);
             return;
         }
-        message.handle(coDrone);
+        message.handle(coDrone, link, sensors, internals);
     }
 
     public void startTimer() {

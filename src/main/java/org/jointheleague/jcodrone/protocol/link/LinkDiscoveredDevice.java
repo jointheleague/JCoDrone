@@ -1,6 +1,9 @@
 package org.jointheleague.jcodrone.protocol.link;
 
 import org.jointheleague.jcodrone.CoDrone;
+import org.jointheleague.jcodrone.Internals;
+import org.jointheleague.jcodrone.Link;
+import org.jointheleague.jcodrone.Sensors;
 import org.jointheleague.jcodrone.protocol.InvalidDataSizeException;
 import org.jointheleague.jcodrone.protocol.Serializable;
 
@@ -72,7 +75,7 @@ public class LinkDiscoveredDevice implements Serializable {
     }
 
     @Override
-    public void handle(CoDrone coDrone) {
-        coDrone.getLink().addDevice(this);
+    public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
+        link.addDevice(this);
     }
 }

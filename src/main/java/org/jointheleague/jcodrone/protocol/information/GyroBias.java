@@ -1,13 +1,17 @@
 package org.jointheleague.jcodrone.protocol.information;
 
-import org.jointheleague.jcodrone.protocol.Serializable;
+import org.jointheleague.jcodrone.CoDrone;
+import org.jointheleague.jcodrone.Internals;
+import org.jointheleague.jcodrone.Link;
+import org.jointheleague.jcodrone.Sensors;
 
-public class GyroBias implements Serializable { // TODO find implementation
+public class GyroBias extends Attitude {
+    public GyroBias(short roll, short pitch, short yaw) {
+        super(roll, pitch, yaw);
+    } // TODO find implementation
+
     @Override
-    public byte[] toArray() {
-        return new byte[0];
-    }
-    public byte getInstanceSize() {
-        return 0;
+    public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
+        sensors.setGyroBias(this);
     }
 }

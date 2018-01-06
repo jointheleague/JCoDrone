@@ -36,7 +36,7 @@ public class LinkEventAddress extends LinkEvent {
         EventLink event = EventLink.fromByte(buffer.get());
         byte result = buffer.get();
         byte[] address = new byte[ADDRESS_LENGTH];
-        buffer.get(address, 2, ADDRESS_LENGTH);
+        buffer.get(address, 0, ADDRESS_LENGTH);
         return new LinkEventAddress(event, result, address);
     }
 }

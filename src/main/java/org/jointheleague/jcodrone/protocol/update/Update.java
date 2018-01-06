@@ -40,7 +40,7 @@ public class Update implements Serializable {
         ByteBuffer buffer = ByteBuffer.wrap(data);
         short indexBlock = buffer.getShort();
         byte[] dataArray = new byte[DATA_ARRAY_LENGTH];
-        buffer.get(dataArray, 2, DATA_ARRAY_LENGTH);
+        buffer.get(dataArray, 0, DATA_ARRAY_LENGTH);
         return new Update(indexBlock, dataArray);
     }
 }

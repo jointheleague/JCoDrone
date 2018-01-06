@@ -42,7 +42,7 @@ public class LightEventColor2 implements Serializable {
         byte[] buffer1 = new byte[LightEventColor.getSize()];
         byte[] buffer2 = new byte[LightEventColor.getSize()];
         buffer.get(buffer1, 0, LightEventColor.getSize());
-        buffer.get(buffer2, LightEventColor.getSize(), LightEventColor.getSize());
+        buffer.get(buffer2, 0, LightEventColor.getSize());
         LightEventColor event1 = LightEventColor.parse(buffer1);
         LightEventColor event2 = LightEventColor.parse(buffer2);
         return new LightEventColor2(event1, event2);

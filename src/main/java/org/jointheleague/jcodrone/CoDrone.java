@@ -74,6 +74,10 @@ public class CoDrone implements AutoCloseable {
     private void open(String portName) {
         log.info("Connect to port: {}", portName);
         comPort = SerialPort.getCommPort(portName);
+        comPort.setBaudRate(115200);
+        comPort.setParity(SerialPort.NO_PARITY);
+        comPort.setNumStopBits(SerialPort.ONE_STOP_BIT);
+        comPort.setNumDataBits(8);
         comPort.openPort();
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 100, 0);
         inputStream = comPort.getInputStream();
@@ -193,6 +197,7 @@ public class CoDrone implements AutoCloseable {
         comPort.writeBytes(message.array(), message.capacity());
         log.info("Sent: {}", DatatypeConverter.printHexBinary(message.array()));
     }
+
 
     /**
      * Sends a command to the drone.
@@ -342,6 +347,9 @@ public class CoDrone implements AutoCloseable {
         Flight.underAttack(this);
     }
 
+    public void flyDirect(DirectControl control) {
+        Flight.flyDirect(this, control);
+    }
     /**
      * Sets a single light mode.
      *
@@ -512,6 +520,6 @@ public class CoDrone implements AutoCloseable {
     }
 
     public boolean isFlightMode() {
-        return internals.getState().isFlightMode();
+        return (internals.getState() != null && internals.getState().isFlightMode());
     }
 }

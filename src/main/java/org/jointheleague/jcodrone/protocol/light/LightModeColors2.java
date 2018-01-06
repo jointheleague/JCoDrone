@@ -42,7 +42,7 @@ public class LightModeColors2 implements Serializable {
         byte[] buffer1 = new byte[LightModeColors.getSize()];
         byte[] buffer2 = new byte[LightModeColors.getSize()];
         buffer.get(buffer1, 0, LightModeColors.getSize());
-        buffer.get(buffer2, LightModeColors.getSize(), LightModeColors.getSize());
+        buffer.get(buffer2, 0, LightModeColors.getSize());
         LightModeColors mode1 = LightModeColors.parse(buffer1);
         LightModeColors mode2 = LightModeColors.parse(buffer2);
         return new LightModeColors2(mode1, mode2);

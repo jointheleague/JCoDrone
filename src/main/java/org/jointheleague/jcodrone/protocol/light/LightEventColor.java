@@ -1,7 +1,6 @@
 package org.jointheleague.jcodrone.protocol.light;
 
 import org.jointheleague.jcodrone.protocol.InvalidDataSizeException;
-import org.jointheleague.jcodrone.protocol.Serializable;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -42,7 +41,7 @@ public class LightEventColor extends LightEvent {
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         LightModeDrone mode = LightModeDrone.fromByte(buffer.get());
         byte[] colorBuffer = new byte[Color.getSize()];
-        buffer.get(colorBuffer, 1, Color.getSize());
+        buffer.get(colorBuffer, 0, Color.getSize());
         Color color = Color.parse(colorBuffer);
         short interval = buffer.get();
         short repeat = buffer.get();

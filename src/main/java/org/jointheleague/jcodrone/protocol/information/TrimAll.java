@@ -43,7 +43,7 @@ public class TrimAll implements Serializable {
         byte[] flightBuffer = new byte[TrimFlight.getSize()];
         byte[] driveBuffer = new byte[TrimDrive.getSize()];
         buffer.get(flightBuffer, 0, TrimFlight.getSize());
-        buffer.get(driveBuffer, TrimFlight.getSize(), TrimDrive.getSize());
+        buffer.get(driveBuffer, 0, TrimDrive.getSize());
         TrimFlight trimFlight = TrimFlight.parse(flightBuffer);
         TrimDrive trimDrive = TrimDrive.parse(driveBuffer);
         return new TrimAll(trimFlight, trimDrive);

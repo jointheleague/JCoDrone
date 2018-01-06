@@ -1,5 +1,7 @@
 package org.jointheleague.jcodrone.protocol.information;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jointheleague.jcodrone.CoDrone;
 import org.jointheleague.jcodrone.Internals;
 import org.jointheleague.jcodrone.Link;
@@ -10,6 +12,8 @@ import org.jointheleague.jcodrone.protocol.Serializable;
 import java.nio.ByteBuffer;
 
 public class Attitude implements Serializable {
+    static Logger log = LogManager.getLogger(Attitude.class);
+
     private final short roll;
     private final short pitch;
     private final short yaw;
@@ -51,6 +55,7 @@ public class Attitude implements Serializable {
 
     @Override
     public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
+        log.debug("Attitude Received: [Roll {}, Pitch {}, Yaw {}]", roll, pitch, yaw);
         sensors.setAttitude(this);
     }
 }

@@ -55,9 +55,9 @@ public class LinkDiscoveredDevice implements Serializable {
         ByteBuffer buffer = ByteBuffer.wrap(data);
         byte index = buffer.get();
         byte[] address = new byte[ADDRESS_LENGTH];
-        buffer.get(address, 1, ADDRESS_LENGTH);
+        buffer.get(address, 0, ADDRESS_LENGTH);
         byte[] nameBuffer = new byte[NAME_LENGTH];
-        buffer.get(nameBuffer, ADDRESS_LENGTH + 1, NAME_LENGTH);
+        buffer.get(nameBuffer, 0, NAME_LENGTH);
         byte rssi = buffer.get();
         return new LinkDiscoveredDevice(index, address, new String(nameBuffer), rssi);
     }

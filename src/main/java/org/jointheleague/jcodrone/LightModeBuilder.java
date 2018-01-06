@@ -27,13 +27,13 @@ public class LightModeBuilder {
             this.colorSet = false;
             log.warn("Value of color is being overridden by setColors for light mode.");
         }
-        this.colors = colors;
+        this.colors = color;
         this.colorsSet = true;
         return this;
     }
 
     public LightModeBuilder setColor(String color) {
-        return this.setColor(Colors.valueOf(color.toLowerCase()));
+        return this.setColor(Colors.valueOf(color.toUpperCase()));
     }
 
     public LightModeBuilder setColor(Color color) {

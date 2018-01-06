@@ -41,9 +41,8 @@ public class CommandN implements Serializable {
 
         int position = 0;
         for (int i = 0; i < NUMBER_OF_COMMANDS; i++) {
-            buffer.get(command_bytes, position, getSize());
+            buffer.get(command_bytes, 0, getSize());
             commands[i] = Command.parse(command_bytes);
-            position += getSize();
         }
 
         return new CommandN(commands);

@@ -4,7 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class CRC2State extends State {
-    static Logger log = LogManager.getLogger(Start2State.class);
+    static Logger log = LogManager.getLogger(CRC2State.class);
 
     @Override
     public StateMap call(Receiver receiver, byte data) {
@@ -14,6 +14,6 @@ public class CRC2State extends State {
         } else {
             receiver.handleMessage();
         }
-        return null;
+        return StateMap.START1;
     }
 }

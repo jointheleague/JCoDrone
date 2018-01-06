@@ -21,15 +21,15 @@ public class Flight {
     }
 
     public static void flipRear(CoDrone coDrone) {
-        sendInFlightEvent(coDrone, FlightEvent.STOP);
+        sendInFlightEvent(coDrone, FlightEvent.FLIP_REAR);
     }
 
     public static void flipLeft(CoDrone coDrone) {
-        sendInFlightEvent(coDrone, FlightEvent.STOP);
+        sendInFlightEvent(coDrone, FlightEvent.FLIP_LEFT);
     }
 
     public static void flipRight(CoDrone coDrone) {
-        sendInFlightEvent(coDrone, FlightEvent.STOP);
+        sendInFlightEvent(coDrone, FlightEvent.FLIP_RIGHT);
     }
 
     public static void turnOver(CoDrone coDrone) {

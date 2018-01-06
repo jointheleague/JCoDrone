@@ -43,7 +43,7 @@ public class LightEventCommand implements Serializable {
         byte[] eventBuffer = new byte[LightEventColors.getSize()];
         byte[] commandBuffer = new byte[Command.getSize()];
         buffer.get(eventBuffer, 0, LightEventColors.getSize());
-        buffer.get(commandBuffer, LightEventColors.getSize(), Command.getSize());
+        buffer.get(commandBuffer, 0, Command.getSize());
         LightEventColors event = LightEventColors.parse(eventBuffer);
         Command command = Command.parse(commandBuffer);
         return new LightEventCommand(event, command);

@@ -1,5 +1,7 @@
 package org.jointheleague.jcodrone.protocol.link;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jointheleague.jcodrone.CoDrone;
 import org.jointheleague.jcodrone.Internals;
 import org.jointheleague.jcodrone.Link;
@@ -11,6 +13,7 @@ import org.jointheleague.jcodrone.system.EventLink;
 import java.nio.ByteBuffer;
 
 public class LinkEvent implements Serializable {
+    static Logger log = LogManager.getLogger(LinkEvent.class);
     private final EventLink event;
     private final byte result;
 
@@ -47,6 +50,7 @@ public class LinkEvent implements Serializable {
     }
 
     public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
+        log.debug("Link event received: {}", event.toString());
         switch (event) {
             case SCANNING:
                 link.clearDevices();

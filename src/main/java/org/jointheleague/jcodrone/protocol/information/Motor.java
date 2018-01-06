@@ -43,7 +43,7 @@ public class Motor implements Serializable {
         MotorBlock[] blocks = new MotorBlock[COUNT_OF_BLOCKS];
         for (int i = 0; i < COUNT_OF_BLOCKS; i++) {
             byte[] blockBuffer = new byte[MotorBlock.getSize()];
-            buffer.get(blockBuffer, i * MotorBlock.getSize(), MotorBlock.getSize());
+            buffer.get(blockBuffer, 0, MotorBlock.getSize());
             blocks[i] = MotorBlock.parse(blockBuffer);
         }
         return new Motor(blocks);

@@ -59,18 +59,26 @@ public class Flight {
     }
 
     private static void sendInFlightEvent(CoDrone coDrone, FlightEvent event) {
-        if (true) { //coDrone.isFlying()) { TODO: Determine if drone is flying.
-            sendFlightEvent(coDrone, event);
-        } else {
-            log.error("Event {} can only be sent while flying.", event);
-        }
+        // The original intent was to prevent sending commands in the wrong mode.
+        // For now this will be left to the implementation rather than the library.
+        // TODO: prevent flying commands from being sent while the drone is not flying
+//        if (coDrone.isFlying()) {
+//            sendFlightEvent(coDrone, event);
+//        } else {
+//            log.error("Event {} can only be sent while flying.", event);
+//        }
+        sendFlightEvent(coDrone, event);
     }
 
     private static void sendFlightEvent(CoDrone coDrone, FlightEvent event) {
-        if (coDrone.isFlightMode()) {
-            coDrone.sendCommand(CommandType.FLIGHT_EVENT, event.value());
-        } else {
-            log.error("Flight events can only be sent in flight mode.");
-        }
+        // The original intent was to prevent sending commands in the wrong mode.
+        // For now this will be left to the implementation rather than the library.
+        // TODO: prevent flight commands from being sent when drone is in driving mode
+//        if (coDrone.isFlightMode()) {
+//            coDrone.sendCommand(CommandType.FLIGHT_EVENT, event.value());
+//        } else {
+//            log.error("Flight events can only be sent in flight mode.");
+//        }
+        coDrone.sendCommand(CommandType.FLIGHT_EVENT, event.value());
     }
 }

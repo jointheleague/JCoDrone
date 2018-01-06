@@ -8,7 +8,7 @@ import java.nio.ByteOrder;
 public class LightEventColor extends LightEvent {
     private final Color color;
 
-    public LightEventColor(LightModeDrone mode, Color color, short interval, short repeat) {
+    public LightEventColor(LightModeDrone mode, Color color, int interval, int repeat) {
         super(interval, repeat, mode);
         this.color = color;
     }

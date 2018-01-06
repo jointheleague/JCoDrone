@@ -1,59 +1,69 @@
 package org.jointheleague.jcodrone;
 
-import java.util.Optional;
+import static org.jointheleague.jcodrone.protocol.Validator.isValidControl;
 
 public class DirectControl {
-    private byte roll = 0;
-    private byte pitch = 0;
-    private byte yaw = 0;
-    private byte throttle = 0;
+    private int roll;
+    private int pitch;
+    private int yaw;
+    private int throttle;
 
-    public DirectControl(byte roll, byte pitch, byte yaw, byte throttle) {
-        if (!inRange(roll) || !inRange(pitch) || !inRange(yaw) || !inRange(throttle))
+    @SuppressWarnings("WeakerAccess")
+    public DirectControl(int roll, int pitch, int yaw, int throttle) {
+        if (!(isValidControl(roll) && isValidControl(pitch) && isValidControl(yaw) && isValidControl(throttle))) {
             throw new IllegalArgumentException();
+        }
         this.roll = roll;
         this.pitch = pitch;
         this.yaw = yaw;
         this.throttle = throttle;
     }
 
-    public void setRoll(byte roll) {
-        if (!inRange(roll)) throw new IllegalArgumentException();
-        this.roll = roll;
-    }
-
-    public void setPitch(byte pitch) {
-        if (!inRange(pitch)) throw new IllegalArgumentException();
-        this.pitch = pitch;
-    }
-
-    public void setYaw(byte yaw) {
-        if (!inRange(yaw)) throw new IllegalArgumentException();
-        this.yaw = yaw;
-    }
-
-    public void setThrottle(byte throttle) {
-        if (!inRange(throttle)) throw new IllegalArgumentException();
-        this.throttle = throttle;
-    }
-
-    public byte getRoll() {
+    public int getRoll() {
         return roll;
     }
 
-    public byte getPitch() {
+    @SuppressWarnings("unused")
+    public void setRoll(byte roll) {
+        if (!isValidControl(roll)) {
+            throw new IllegalArgumentException();
+        }
+        this.roll = roll;
+    }
+
+    public int getPitch() {
         return pitch;
     }
 
-    public byte getYaw() {
+    @SuppressWarnings("unused")
+    public void setPitch(byte pitch) {
+        if (!isValidControl(pitch)) {
+            throw new IllegalArgumentException();
+        }
+        this.pitch = pitch;
+    }
+
+    public int getYaw() {
         return yaw;
     }
 
-    public byte getThrottle() {
+    @SuppressWarnings("unused")
+    public void setYaw(byte yaw) {
+        if (!isValidControl(yaw)) {
+            throw new IllegalArgumentException();
+        }
+        this.yaw = yaw;
+    }
+
+    public int getThrottle() {
         return throttle;
     }
 
-    boolean inRange(byte value) {
-        return (-100 <= value && value <= 100);
+    @SuppressWarnings("unused")
+    public void setThrottle(byte throttle) {
+        if (!isValidControl(throttle)) {
+            throw new IllegalArgumentException();
+        }
+        this.throttle = throttle;
     }
 }

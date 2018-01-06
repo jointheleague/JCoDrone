@@ -6,12 +6,12 @@ import org.jointheleague.jcodrone.protocol.Serializable;
 import java.nio.ByteBuffer;
 
 public class Control implements Serializable {
-    private final byte roll;
-    private final byte pitch;
-    private final byte yaw;
-    private final byte throttle;
+    private final int roll;
+    private final int pitch;
+    private final int yaw;
+    private final int throttle;
 
-    public Control(byte roll, byte pitch, byte yaw, byte throttle) {
+    public Control(int roll, int pitch, int yaw, int throttle) {
         this.roll = roll;
         this.pitch = pitch;
         this.yaw = yaw;
@@ -29,10 +29,10 @@ public class Control implements Serializable {
     @Override
     public byte[] toArray() {
         ByteBuffer buffer = ByteBuffer.allocate(getSize());
-        buffer.put(roll);
-        buffer.put(pitch);
-        buffer.put(yaw);
-        buffer.put(throttle);
+        buffer.put((byte) roll);
+        buffer.put((byte) pitch);
+        buffer.put((byte) yaw);
+        buffer.put((byte) throttle);
         return buffer.array();
     }
 
@@ -44,11 +44,8 @@ public class Control implements Serializable {
         ByteBuffer buffer = ByteBuffer.wrap(data);
         byte roll = buffer.get();
         byte pitch = buffer.get();
-        ;
         byte yaw = buffer.get();
-        ;
         byte throttle = buffer.get();
-        ;
 
         return new Control(roll, pitch, yaw, throttle);
     }

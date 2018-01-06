@@ -6,12 +6,17 @@ import org.jointheleague.jcodrone.protocol.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class Color implements Serializable {
-    private final short r;
-    private final short g;
-    private final short b;
+import static org.jointheleague.jcodrone.protocol.Validator.isValidUnsignedByte;
 
-    public Color(short r, short g, short b) {
+public class Color implements Serializable {
+    private final int r;
+    private final int g;
+    private final int b;
+
+    public Color(int r, int g, int b) {
+        if (!(isValidUnsignedByte(r) && isValidUnsignedByte(g) && isValidUnsignedByte(b))) {
+            throw new IllegalArgumentException("Colors must be in the range of 0 to 255.");
+        }
         this.r = r;
         this.g = g;
         this.b = b;
@@ -42,9 +47,9 @@ public class Color implements Serializable {
 
         ByteBuffer buffer = ByteBuffer.wrap(data);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
-        short r = buffer.get();
-        short g = buffer.get();
-        short b = buffer.get();
+        int r = buffer.get();
+        int g = buffer.get();
+        int b = buffer.get();
         return new Color(r, g, b);
     }
 }

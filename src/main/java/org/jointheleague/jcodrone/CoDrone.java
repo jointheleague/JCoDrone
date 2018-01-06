@@ -416,7 +416,7 @@ public class CoDrone implements AutoCloseable {
      * @param irData Data to be sent for ir message.
      */
     @SuppressWarnings("unused")
-    public void lightModeWithCommandandIR(LightMode mode, CommandType command, byte commandOption, short irData) {
+    public void lightModeWithCommandandIR(LightMode mode, CommandType command, byte commandOption, int irData) {
         if (mode instanceof LightModeColors) {
             LED.setLightModeCommandIR(this, (LightModeColors) mode, command, commandOption, irData);
         } else {
@@ -424,10 +424,12 @@ public class CoDrone implements AutoCloseable {
         }
     }
 
+    @SuppressWarnings("unused")
     public void lightEvent(LightEvent event) {
         LED.setLightEvent(this, event);
     }
 
+    @SuppressWarnings("unused")
     public void lightEventWithCommand(LightEvent event, CommandType command, byte commandOption) {
         if (event instanceof LightEventColors) {
             LED.setLightEventCommand(this, (LightEventColors) event, command, commandOption);
@@ -436,7 +438,8 @@ public class CoDrone implements AutoCloseable {
         }
     }
 
-    public void lightEventWithCommandIR(LightEvent event, CommandType command, byte commandOption, short irData) {
+    @SuppressWarnings("unused")
+    public void lightEventWithCommandIR(LightEvent event, CommandType command, byte commandOption, int irData) {
         if (event instanceof LightEventColors) {
             LED.setLightEventCommandIR(this, (LightEventColors) event, command, commandOption, irData);
         } else {
@@ -447,78 +450,97 @@ public class CoDrone implements AutoCloseable {
     /**
      * Drone Information
      */
+    @SuppressWarnings("unused")
     public Address getAddress() {
         return link.getAddress();
     }
 
+    @SuppressWarnings("unused")
     public Attitude getAttitude() {
         return sensors.getAttitude();
     }
 
+    @SuppressWarnings("unused")
     public Battery getBattery() {
         return internals.getBattery();
     }
 
+    @SuppressWarnings("unused")
     public Button getButton() {
         return internals.getButton();
     }
 
+    @SuppressWarnings("unused")
     public CountDrive getCountDrive() {
         return internals.getCountDrive();
     }
 
+    @SuppressWarnings("unused")
     public CountFlight getCountFlight() {
         return internals.getCountFlight();
     }
 
+    @SuppressWarnings("unused")
     public GyroBias getGyroBias() {
         return sensors.getGyroBias();
     }
 
+    @SuppressWarnings("unused")
     public ImageFlow getImageFlow() {
         return sensors.getImageFlow();
     }
 
+    @SuppressWarnings("unused")
     public IMU getImu() {
         return sensors.getImu();
     }
 
+    @SuppressWarnings("unused")
     public IRMessage getIrMessage() {
         return internals.getIrMessage();
     }
 
+    @SuppressWarnings("unused")
     public Motor getMotor() {
         return internals.getMotor();
     }
 
+    @SuppressWarnings("unused")
     public Pressure getPressure() {
         return sensors.getPressure();
     }
 
+    @SuppressWarnings("unused")
     public Range getRange() {
         return sensors.getRange();
     }
 
+    @SuppressWarnings("unused")
     public State getState() {
         return internals.getState();
     }
 
+    @SuppressWarnings("unused")
     public Temperature getTemperature() {
         return sensors.getTemperature();
     }
 
+    @SuppressWarnings("unused")
     public TrimAll getTrimAll() {
         return internals.getTrimAll();
     }
 
+    @SuppressWarnings("unused")
     public TrimDrive getTrimDrive() {
         return internals.getTrimDrive();
     }
 
+    @SuppressWarnings("unused")
     public TrimFlight getTrimFlight() {
         return internals.getTrimFlight();
     }
 
+    @SuppressWarnings("unused")
     public boolean isFlightMode() {
         return (internals.getState() != null && internals.getState().isFlightMode());
     }

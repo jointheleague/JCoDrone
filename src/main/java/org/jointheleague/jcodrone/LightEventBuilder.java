@@ -4,14 +4,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jointheleague.jcodrone.protocol.light.*;
 
+import static org.jointheleague.jcodrone.protocol.Validator.isValidUnsignedByte;
+
 public class LightEventBuilder {
     private static Logger log = LogManager.getLogger(LightEventBuilder.class);
 
     private LightModeDrone mode = null;
     private Colors colors = null;
     private Color color = null;
-    private short interval = 0;
-    private short repeat = 0;
+    private int interval = 0;
+    private int repeat = 0;
 
     private boolean modeSet = false;
     private boolean colorSet = false;
@@ -28,13 +30,13 @@ public class LightEventBuilder {
             this.colorSet = false;
             log.warn("Value of color is being overridden by setColors for light mode.");
         }
-        this.colors = colors;
+        this.colors = color;
         this.colorsSet = true;
         return this;
     }
 
     public LightEventBuilder setColor(String color) {
-        return this.setColor(Colors.valueOf(color.toLowerCase()));
+        return this.setColor(Colors.valueOf(color.toUpperCase()));
     }
 
     public LightEventBuilder setColor(Color color) {
@@ -47,16 +49,22 @@ public class LightEventBuilder {
         return this;
     }
 
-    public LightEventBuilder setColor(short r, short g, short b) {
+    public LightEventBuilder setColor(int r, int g, int b) {
         return this.setColor(new Color(r, g, b));
     }
 
-    public LightEventBuilder setInterval(short interval) {
+    public LightEventBuilder setInterval(int interval) {
+        if (!isValidUnsignedByte(interval)) {
+            throw new IllegalArgumentException("Interval must be between 0 to 255.");
+        }
         this.interval = interval;
         return this;
     }
 
-    public LightEventBuilder setRepeat(short repeat) {
+    public LightEventBuilder setRepeat(int repeat) {
+        if (!isValidUnsignedByte(repeat)) {
+            throw new IllegalArgumentException("Interval must be between 0 to 255.");
+        }
         this.repeat = repeat;
         return this;
     }

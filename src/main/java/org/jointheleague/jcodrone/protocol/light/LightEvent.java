@@ -4,10 +4,11 @@ import org.jointheleague.jcodrone.protocol.Serializable;
 
 public abstract class LightEvent implements Serializable {
     protected final LightModeDrone mode;
-    protected final short interval;
-    protected final short repeat;
+    protected final int interval;
+    protected final int repeat;
 
-    public LightEvent(short interval, short repeat, LightModeDrone mode) {
+    @SuppressWarnings("WeakerAccess")
+    public LightEvent(int interval, int repeat, LightModeDrone mode) {
         this.interval = interval;
         this.repeat = repeat;
         this.mode = mode;

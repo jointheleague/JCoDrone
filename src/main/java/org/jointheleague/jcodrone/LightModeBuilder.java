@@ -4,13 +4,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jointheleague.jcodrone.protocol.light.*;
 
+import static org.jointheleague.jcodrone.protocol.Validator.isValidUnsignedByte;
+
 public class LightModeBuilder {
     private static Logger log = LogManager.getLogger(LightModeBuilder.class);
 
     private LightModeDrone mode = null;
     private Colors colors = null;
     private Color color = null;
-    private short interval = 0;
+    private int interval = 0;
 
     private boolean modeSet = false;
     private boolean colorSet = false;
@@ -46,11 +48,14 @@ public class LightModeBuilder {
         return this;
     }
 
-    public LightModeBuilder setColor(short r, short g, short b) {
+    public LightModeBuilder setColor(int r, int g, int b) {
         return this.setColor(new Color(r, g, b));
     }
 
-    public LightModeBuilder setInterval(short interval) {
+    public LightModeBuilder setInterval(int interval) {
+        if (!isValidUnsignedByte(interval)) {
+            throw new IllegalArgumentException("Interval must be between 0 to 255.");
+        }
         this.interval = interval;
         return this;
     }

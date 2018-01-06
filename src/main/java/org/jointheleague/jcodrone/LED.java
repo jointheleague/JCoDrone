@@ -63,7 +63,7 @@ public class LED {
         coDrone.transfer(header, lightModeCommand);
     }
 
-    public static void setLightModeCommandIR(CoDrone coDrone, LightModeColors mode, CommandType commandType, byte option, short irData) {
+    public static void setLightModeCommandIR(CoDrone coDrone, LightModeColors mode, CommandType commandType, byte option, int irData) {
         Header header = new Header(DataType.LIGHT_MODE_COMMAND_IR, LightModeCommandIR.getSize());
         Command command = new Command(commandType, option);
         LightModeCommandIR lightModeCommandIr = new LightModeCommandIR(mode, command, irData);
@@ -85,7 +85,7 @@ public class LED {
         coDrone.transfer(header, lightEventCommand);
     }
 
-    public static void setLightEventCommandIR(CoDrone coDrone, LightEventColors event, CommandType commandType, byte option, short irData) {
+    public static void setLightEventCommandIR(CoDrone coDrone, LightEventColors event, CommandType commandType, byte option, int irData) {
         Header header = new Header(DataType.LIGHT_EVENT_COMMAND_IR, LightEventCommandIR.getSize());
         Command command = new Command(commandType, option);
 

@@ -12,7 +12,7 @@ public class LightModeBuilder {
     private LightModeDrone mode = null;
     private Colors colors = null;
     private Color color = null;
-    private int interval = 1;
+    private int interval = 255;
 
     private boolean modeSet = false;
     private boolean colorSet = false;

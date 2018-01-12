@@ -23,7 +23,7 @@ public class Link {
         this.codrone = codrone;
     }
 
-    public void connect(String deviceName) throws CoDroneNotFoundException {
+    public void connect(String deviceName) throws CoDroneNotFoundException, MessageNotSentException {
         // ModeLinkBroadcast.Passive mode change
         setBroadcastMode(ModeLinkBroadcast.PASSIVE);
         try {
@@ -92,7 +92,7 @@ public class Link {
         }
     }
 
-    public void resetSystem(){
+    public void resetSystem() throws MessageNotSentException {
         codrone.sendCommand(CommandType.LINK_SYSTEM_RESET);
         try {
             // TODO Alternative to sleeping for 3 seconds?
@@ -102,26 +102,27 @@ public class Link {
         }
     }
 
-    public void connectToIndex(byte index) {
+    public void connectToIndex(byte index) throws MessageNotSentException {
         codrone.sendCommand(CommandType.LINK_CONNECT, index);
     }
 
-    public void setBroadcastMode(ModeLinkBroadcast mode) {
+    public void setBroadcastMode(ModeLinkBroadcast mode) throws MessageNotSentException {
         codrone.sendCommand(CommandType.LINK_MODE_BROADCAST, mode.value());
     }
 
-    public void startDiscovery(){
+    public void startDiscovery() throws MessageNotSentException {
         codrone.sendCommand(CommandType.LINK_DISCOVER_START);
     }
 
-    public void stopDiscovery(){
+    public void stopDiscovery() throws MessageNotSentException {
         codrone.sendCommand(CommandType.LINK_DISCOVER_STOP);
     }
-    public void startRSSIPolling(){
+
+    public void startRSSIPolling() throws MessageNotSentException {
         codrone.sendCommand(CommandType.LINK_RSSI_POLLING_START);
     }
 
-    public void stopRSSIPolling(){
+    public void stopRSSIPolling() throws MessageNotSentException {
         codrone.sendCommand(CommandType.LINK_RSSI_POLLING_STOP);
     }
 

@@ -29,6 +29,7 @@ import java.util.stream.Stream;
  * A CoDrone object provides the state of the drone and the methods required to control the drone.
  */
 public class CoDrone implements AutoCloseable {
+    public static final int SEND_TIMEOUT = 500;
     private static Logger log = LogManager.getLogger(CoDrone.class);
     private final Link link;
     private final Sensors sensors;
@@ -132,7 +133,7 @@ public class CoDrone implements AutoCloseable {
      *
      * @throws CoDroneNotFoundException Thrown if no drone is found. Check logs to determine what serial port was used.
      */
-    public void connect() throws CoDroneNotFoundException {
+    public void connect() throws CoDroneNotFoundException, MessageNotSentException {
         connect(null, null, false);
     }
 
@@ -146,7 +147,7 @@ public class CoDrone implements AutoCloseable {
      * @throws CoDroneNotFoundException Thrown if the specified port or drone can not be found.
      */
     @SuppressWarnings("WeakerAccess")
-    public void connect(String portName, String deviceName, boolean resetSystem) throws CoDroneNotFoundException {
+    public void connect(String portName, String deviceName, boolean resetSystem) throws CoDroneNotFoundException, MessageNotSentException {
         if (deviceName != null && !deviceName.isEmpty() && deviceName.length() != 12) {
             throw new IllegalArgumentException(
                     String.format("Invalid device name length %s.", deviceName.length()));
@@ -208,7 +209,7 @@ public class CoDrone implements AutoCloseable {
      *
      * @param type The command from the CommandType enumeration.
      */
-    public void sendCommand(CommandType type) {
+    public void sendCommand(CommandType type) throws MessageNotSentException {
         sendCommand(type, (byte) 0);
     }
 
@@ -221,56 +222,112 @@ public class CoDrone implements AutoCloseable {
      *
      * @param type The command from the CommandType enumeration.
      */
-    public void sendCommand(CommandType type, byte option) {
+    public void sendCommand(CommandType type, byte option) throws MessageNotSentException {
         Command command = new Command(type, option);
 
         sendMessage(command);
     }
 
+    /**
+     * Sends a command to the drone.
+     * <p>
+     * Note: Most of the commands available to be sent are internally used. Care should be taken when directly sending
+     * commands to determine what side effects may occur. Please refer to any separate drone documentation for the use
+     * of commands.
+     *
+     * @param type The command from the CommandType enumeration.
+     */
+    public void sendCommandWait(CommandType type) throws MessageNotSentException {
+        sendCommandWait(type, (byte) 0);
+    }
+
+    /**
+     * Sends a command with a parameter to the drone.
+     * <p>
+     * Note: Most of the commands available to be sent are internally used. Care should be taken when directly sending
+     * commands to determine what side effects may occur. Please refer to any separate drone documentation for the use
+     * of commands.
+     *
+     * @param type The command from the CommandType enumeration.
+     */
+    public void sendCommandWait(CommandType type, byte option) throws MessageNotSentException {
+        Command command = new Command(type, option);
+
+        sendMessageWait(command);
+    }
+
     @SuppressWarnings("unused")
     void sendMessage(Serializable message) {
         Header header = new Header(DataType.fromClass(message.getClass()), message.getInstanceSize());
-
         transfer(header, message);
     }
+
+    @SuppressWarnings("unused")
+    void sendMessageWait(Serializable message) throws MessageNotSentException {
+        Header header = new Header(DataType.fromClass(message.getClass()), message.getInstanceSize());
+
+        boolean messageSent = false;
+        int tries = 0;
+        while (!messageSent && tries < 3) {
+            Object ackLock = receiver.getAckLock(header.getDataType());
+            synchronized (ackLock) {
+                tries++;
+                transfer(header, message);
+                long sentTime = System.nanoTime();
+                while (!messageSent && (sentTime + SEND_TIMEOUT) > System.nanoTime()) {
+                    try {
+                        ackLock.wait();
+                        messageSent = true;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        if (!messageSent) {
+            throw new MessageNotSentException("Maximum retries exceeded.");
+        }
+    }
+
 
     /**
      * Sends a command to set the drone's mode to flight mode with guard installed.
      */
     @SuppressWarnings("unused")
-    public void setFlightMode() {
-        sendCommand(CommandType.MODE_VEHICLE, ModeVehicle.FLIGHT_GUARD.value());
+    public void setFlightMode() throws MessageNotSentException {
+        sendCommandWait(CommandType.MODE_VEHICLE, ModeVehicle.FLIGHT_GUARD.value());
     }
 
     /**
      * Sends a command to set the drone's mode to flight mode with no guard installed.
      */
     @SuppressWarnings("unused")
-    public void setFlightModeNoGuard() {
-        sendCommand(CommandType.MODE_VEHICLE, ModeVehicle.FLIGHT_NO_GUARD.value());
+    public void setFlightModeNoGuard() throws MessageNotSentException {
+        sendCommandWait(CommandType.MODE_VEHICLE, ModeVehicle.FLIGHT_NO_GUARD.value());
     }
 
     /**
      * Sends a command to set the drone's mode to flight mode with camera installed.
      */
     @SuppressWarnings("unused")
-    public void setFlightModeFPV() {
-        sendCommand(CommandType.MODE_VEHICLE, ModeVehicle.FLIGHT_FPV.value());
+    public void setFlightModeFPV() throws MessageNotSentException {
+        sendCommandWait(CommandType.MODE_VEHICLE, ModeVehicle.FLIGHT_FPV.value());
     }
 
     /**
      * Sends a command to set the drone's mode to drive mode.
      */
     @SuppressWarnings("unused")
-    public void setDriveMode() {
-        sendCommand(CommandType.MODE_VEHICLE, ModeVehicle.DRIVE.value());
+    public void setDriveMode() throws MessageNotSentException {
+        sendCommandWait(CommandType.MODE_VEHICLE, ModeVehicle.DRIVE.value());
     }
 
     /**
      * Sends a command to make the drone take off.
      */
     @SuppressWarnings("unused")
-    public void takeoff() {
+    public void takeoff() throws MessageNotSentException {
         Flight.takeoff(this);
     }
 
@@ -278,7 +335,7 @@ public class CoDrone implements AutoCloseable {
      * Sends a command to make the drone land.
      */
     @SuppressWarnings("unused")
-    public void land() {
+    public void land() throws MessageNotSentException {
         Flight.land(this);
     }
 
@@ -286,7 +343,7 @@ public class CoDrone implements AutoCloseable {
      * Sends a command to make the drone do a front flip in flight.
      */
     @SuppressWarnings("unused")
-    public void flipFront() {
+    public void flipFront() throws MessageNotSentException {
         Flight.flipFront(this);
     }
 
@@ -294,7 +351,7 @@ public class CoDrone implements AutoCloseable {
      * Sends a command to make the drone do a back flip in flight.
      */
     @SuppressWarnings("unused")
-    public void flipRear() {
+    public void flipRear() throws MessageNotSentException {
         Flight.flipRear(this);
     }
 
@@ -302,7 +359,7 @@ public class CoDrone implements AutoCloseable {
      * Sends a command to make the drone do a left flip in flight.
      */
     @SuppressWarnings("unused")
-    public void flipLeft() {
+    public void flipLeft() throws MessageNotSentException {
         Flight.flipLeft(this);
     }
 
@@ -310,7 +367,7 @@ public class CoDrone implements AutoCloseable {
      * Sends a command to make the drone do a right flip in flight.
      */
     @SuppressWarnings("unused")
-    public void flipRight() {
+    public void flipRight() throws MessageNotSentException {
         Flight.flipRight(this);
     }
 
@@ -318,7 +375,7 @@ public class CoDrone implements AutoCloseable {
      * Sends a command to make the drone stop the motors. This command should be used to implement a kill switch.
      */
     @SuppressWarnings("unused")
-    public void stop() {
+    public void stop() throws MessageNotSentException {
         Flight.stop(this);
     }
 
@@ -327,7 +384,7 @@ public class CoDrone implements AutoCloseable {
      * is not flying and is sitting upside down after a crash to right it. Testing is required.
      */
     @SuppressWarnings("unused")
-    public void turnOver() {
+    public void turnOver() throws MessageNotSentException {
         Flight.turnOver(this);
     }
 
@@ -335,7 +392,7 @@ public class CoDrone implements AutoCloseable {
      * This command is including in the protocol and possibly sends a preconfigured IR message.
      */
     @SuppressWarnings("unused")
-    public void shoot() {
+    public void shoot() throws MessageNotSentException {
         Flight.shoot(this);
     }
 
@@ -343,11 +400,11 @@ public class CoDrone implements AutoCloseable {
      * It is unknown at this time the effect of sending this command.
      */
     @SuppressWarnings("unused")
-    public void underAttack() {
+    public void underAttack() throws MessageNotSentException {
         Flight.underAttack(this);
     }
 
-    public void flyDirect(DirectControl control) {
+    public void flyDirect(DirectControl control) throws MessageNotSentException {
         Flight.flyDirect(this, control);
     }
     /**

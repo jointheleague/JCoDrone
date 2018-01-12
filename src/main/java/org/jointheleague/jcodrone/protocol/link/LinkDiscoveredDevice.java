@@ -1,5 +1,7 @@
 package org.jointheleague.jcodrone.protocol.link;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jointheleague.jcodrone.CoDrone;
 import org.jointheleague.jcodrone.Internals;
 import org.jointheleague.jcodrone.Link;
@@ -10,8 +12,12 @@ import org.jointheleague.jcodrone.protocol.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class LinkDiscoveredDevice implements Serializable {
+    static Logger log = LogManager.getLogger(LinkDiscoveredDevice.class);
+
     public static final int NAME_LENGTH = 20;
     public static final int ADDRESS_LENGTH = 6;
     private final byte index;
@@ -74,8 +80,21 @@ public class LinkDiscoveredDevice implements Serializable {
         return String.valueOf(name);
     }
 
+    public static IntStream intStream(byte[] array) {
+        return IntStream.range(0, array.length).map(idx -> array[idx]);
+    }
+
     @Override
     public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
+        log.debug("Device {} found with address {}", this.getNameString(), this.getFormattedAddress());
         link.addDevice(this);
+    }
+
+    public String getNameString() {
+        return new String(name);
+    }
+
+    public String getFormattedAddress() {
+        return intStream(address).mapToObj(x -> Integer.toHexString(0x0FF & x)).collect(Collectors.joining(":"));
     }
 }

@@ -2,10 +2,7 @@ package org.jointheleague.jcodrone.receiver;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jointheleague.jcodrone.CoDrone;
-import org.jointheleague.jcodrone.Internals;
-import org.jointheleague.jcodrone.Link;
-import org.jointheleague.jcodrone.Sensors;
+import org.jointheleague.jcodrone.*;
 import org.jointheleague.jcodrone.protocol.DataType;
 import org.jointheleague.jcodrone.protocol.Serializable;
 
@@ -29,6 +26,7 @@ public class Receiver {
     private DataType dataType;
     private Timer timer;
 
+    private Object[] ackLocks;
 
     public Receiver(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
         this.coDrone = coDrone;
@@ -36,6 +34,10 @@ public class Receiver {
         this.sensors = sensors;
         this.internals = internals;
         this.state = StateMap.START1;
+        this.ackLocks = new Object[CommandType.values().length];
+        for (int i = 0; i < CommandType.values().length; i++) {
+            this.ackLocks[i] = new Object();
+        }
     }
 
     public void call(byte data) {
@@ -95,6 +97,7 @@ public class Receiver {
             log.error("Data type {} can not be parsed.", dataType, e);
             return;
         }
+        log.info("Handling message: {}", message.getClass().getName());
         message.handle(coDrone, link, sensors, internals);
     }
 
@@ -113,5 +116,13 @@ public class Receiver {
 
     public int getCrc16calculated() {
         return crc16calculated;
+    }
+
+    public Object getAckLock(DataType dataType) {
+        return ackLocks[dataType.value()];
+    }
+
+    public void ack(DataType dataType) {
+        ackLocks[dataType.value()].notify();
     }
 }

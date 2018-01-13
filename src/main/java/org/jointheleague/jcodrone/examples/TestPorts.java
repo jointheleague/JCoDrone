@@ -28,9 +28,9 @@ public class TestPorts {
                 LightMode mode = new LightModeBuilder().setColor("BLUE").setInterval(5).setMode(LightModeDrone.EYE_HOLD).build();
                 drone.lightMode(mode);
                 Thread.sleep(100);
-                drone.flyDirect(new DirectControl((byte) 0, (byte) 0, (byte) 55, 30));
+                drone.flyDirect(new DirectControl((byte) 0, (byte) 0, (byte) 55, 40));
                 Thread.sleep(2000);
-                mode = new LightModeBuilder().setColor("RED").setInterval(5).setMode(LightModeDrone.EYE_HOLD).build();
+                mode = new LightModeBuilder().setColor("MAGENTA").setInterval(5).setMode(LightModeDrone.EYE_HOLD).build();
                 drone.lightMode(mode);
                 Thread.sleep(100);
                 drone.flyDirect(new DirectControl((byte) 0, (byte) 0, (byte) -55, -15));

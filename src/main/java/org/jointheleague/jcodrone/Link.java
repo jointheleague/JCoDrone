@@ -106,6 +106,10 @@ public class Link {
         codrone.sendCommand(CommandType.LINK_CONNECT, index);
     }
 
+    public void disconnect() throws MessageNotSentException {
+        codrone.sendCommand(CommandType.LINK_DISCONNECT);
+    }
+
     public void setBroadcastMode(ModeLinkBroadcast mode) throws MessageNotSentException {
         codrone.sendCommand(CommandType.LINK_MODE_BROADCAST, mode.value());
     }

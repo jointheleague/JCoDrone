@@ -44,7 +44,7 @@ public class LightModeBuilder {
             log.warn("Value of colors is being overridden by setColor for light mode.");
         }
         this.color = color;
-        this.colorsSet = true;
+        this.colorSet = true;
         return this;
     }
 

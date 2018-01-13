@@ -48,14 +48,14 @@ public class Flight {
         sendFlightEvent(coDrone, FlightEvent.STOP);
     }
 
-    public static void flyDirect(CoDrone coDrone, DirectControl control) throws MessageNotSentException {
+    public static void flyDirect(CoDrone coDrone, DirectControl control) {
         Control message = new Control(
                 control.getRoll(),
                 control.getPitch(),
                 control.getYaw(),
                 control.getThrottle()
         );
-        coDrone.sendMessageWait(message);
+        coDrone.sendMessage(message);
     }
 
     private static void sendInFlightEvent(CoDrone coDrone, FlightEvent event) throws MessageNotSentException {

@@ -30,6 +30,7 @@ import java.util.stream.Stream;
  */
 public class CoDrone implements AutoCloseable {
     public static final int SEND_TIMEOUT = 500;
+    private static final int COMMAND_RETRIES = 3;
     private static Logger log = LogManager.getLogger(CoDrone.class);
     private final Link link;
     private final Sensors sensors;
@@ -112,6 +113,29 @@ public class CoDrone implements AutoCloseable {
      */
     @Override
     public void close() {
+        log.info("Stop drone");
+        for (int i = 0; i < COMMAND_RETRIES; i++) {
+            try {
+                this.stop();
+                Thread.sleep(500);
+                //TODO Check if drone stopped
+                break;
+            } catch (MessageNotSentException e) {
+                log.error("Could not stop drone in close", e);
+            } catch (InterruptedException e) {
+                continue;
+            }
+        }
+
+        log.info("Disconnect bluetooth link");
+        try {
+            link.disconnect();
+            Thread.sleep(500);
+        } catch (MessageNotSentException e) {
+            log.error("Could not disconnect bluetooth link", e);
+        } catch (InterruptedException e) {
+        }
+
         log.info("Closing serial port.");
         stopped = true;
         try {

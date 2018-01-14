@@ -133,44 +133,57 @@ public class CoDrone implements AutoCloseable {
      *
      * @throws CoDroneNotFoundException Thrown if no drone is found. Check logs to determine what serial port was used.
      */
-    public void connect() throws CoDroneNotFoundException, MessageNotSentException {
-        connect(null, null, false);
+    public void connect() throws CoDroneNotFoundException, MessageNotSentException, InterruptedException {
+        connectPort(null);
+        link(null);
     }
 
     /**
-     * This connect method allows the connection to a specific drone over bluetooth via the controller connected
-     * to the specified serial por. Additionally the controller can be reset before the connection is attempted.
+     * The default connection method connects to the nearest drone connected to the last available serial port
+     * enumerated by the operating system.
      *
-     * @param portName    System name of the serial port connected to the controller.
-     * @param deviceName  The name of the drone to connect to.
-     * @param resetSystem Resets the controller before attempting to connect to the drone.
-     * @throws CoDroneNotFoundException Thrown if the specified port or drone can not be found.
+     * @throws CoDroneNotFoundException Thrown if no drone is found. Check logs to determine what serial port was used.
      */
-    @SuppressWarnings("WeakerAccess")
-    public void connect(String portName, String deviceName, boolean resetSystem) throws CoDroneNotFoundException, MessageNotSentException {
+    public void connect(String deviceName) {
         if (deviceName != null && !deviceName.isEmpty() && deviceName.length() != 12) {
             throw new IllegalArgumentException(
                     String.format("Invalid device name length %s.", deviceName.length()));
         }
 
+        connectPort(null);
+    }
+
+    /**
+     * The default connection method connects to the nearest drone connected to the last available serial port
+     * enumerated by the operating system.
+     *
+     * @throws CoDroneNotFoundException Thrown if no drone is found. Check logs to determine what serial port was used.
+     */
+    public void connect(Address address) {
+        connectPort(null);
+    }
+
+    /**
+     * This connect method allows the connection to a specific drone over bluetooth via the controller connected
+     * to the specified serial port. Additionally the controller can be reset before the connection is attempted.
+     *
+     * @param portName System name of the serial port connected to the controller.
+     * @throws CoDroneNotFoundException Thrown if the specified port or drone can not be found.
+     */
+    private void connectPort(String portName) {
         if (comPort == null || !comPort.isOpen()) {
             if (portName == null || portName.isEmpty()) {
                 open();
             } else {
                 open(portName);
-                //Thread.sleep(100);
             }
         } else if (!portName.equalsIgnoreCase(comPort.getSystemPortName())) {
             close();
             open(portName);
-            //Thread.sleep(100);
         }
+    }
 
-        // system reset
-        if (resetSystem) {
-            link.resetSystem();
-        }
-
+    private void link(String deviceName) throws MessageNotSentException, CoDroneNotFoundException, InterruptedException {
         link.connect(deviceName);
     }
 
@@ -197,6 +210,12 @@ public class CoDrone implements AutoCloseable {
 
         comPort.writeBytes(message.array(), message.capacity());
         log.info("Sent: {}", DatatypeConverter.printHexBinary(message.array()));
+        // TODO: Remove this wait
+        try {
+            Thread.sleep(60);
+        } catch (InterruptedException e) {
+            log.warn("Sleep interrupted after sending command.");
+        }
     }
 
 
@@ -209,7 +228,7 @@ public class CoDrone implements AutoCloseable {
      *
      * @param type The command from the CommandType enumeration.
      */
-    public void sendCommand(CommandType type) throws MessageNotSentException {
+    public void sendCommand(CommandType type) {
         sendCommand(type, (byte) 0);
     }
 
@@ -222,7 +241,7 @@ public class CoDrone implements AutoCloseable {
      *
      * @param type The command from the CommandType enumeration.
      */
-    public void sendCommand(CommandType type, byte option) throws MessageNotSentException {
+    public void sendCommand(CommandType type, byte option) {
         Command command = new Command(type, option);
 
         sendMessage(command);
@@ -404,9 +423,10 @@ public class CoDrone implements AutoCloseable {
         Flight.underAttack(this);
     }
 
-    public void flyDirect(DirectControl control) throws MessageNotSentException {
+    public void flyDirect(DirectControl control) {
         Flight.flyDirect(this, control);
     }
+
     /**
      * Sets a single light mode.
      *
@@ -600,5 +620,9 @@ public class CoDrone implements AutoCloseable {
     @SuppressWarnings("unused")
     public boolean isFlightMode() {
         return (internals.getState() != null && internals.getState().isFlightMode());
+    }
+
+    public void requestLinkState() throws MessageNotSentException {
+        link.requestState();
     }
 }

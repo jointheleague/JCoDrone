@@ -1,11 +1,15 @@
 package org.jointheleague.jcodrone.protocol;
 
+import org.jointheleague.jcodrone.Address;
 import org.jointheleague.jcodrone.protocol.common.*;
 import org.jointheleague.jcodrone.protocol.information.*;
 import org.jointheleague.jcodrone.protocol.light.*;
 import org.jointheleague.jcodrone.protocol.link.*;
 import org.jointheleague.jcodrone.protocol.message.Message;
-import org.jointheleague.jcodrone.protocol.update.*;
+import org.jointheleague.jcodrone.protocol.update.Update;
+import org.jointheleague.jcodrone.protocol.update.UpdateInformation;
+import org.jointheleague.jcodrone.protocol.update.UpdateLocationCorrect;
+import org.jointheleague.jcodrone.protocol.update.UpdateLookupTarget;
 
 import java.util.HashMap;
 import java.util.Map;

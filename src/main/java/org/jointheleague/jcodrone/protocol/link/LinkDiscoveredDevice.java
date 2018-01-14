@@ -86,15 +86,19 @@ public class LinkDiscoveredDevice implements Serializable {
 
     @Override
     public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
-        log.debug("Device {} found with address {}", this.getNameString(), this.getFormattedAddress());
+        log.debug("Device {} [{}] RSSI: {}", this.getNameString(), this.getFormattedAddress(), this.rssi);
         link.addDevice(this);
     }
 
     public String getNameString() {
-        return new String(name);
+        return new String(name).trim();
     }
 
     public String getFormattedAddress() {
         return intStream(address).mapToObj(x -> Integer.toHexString(0x0FF & x)).collect(Collectors.joining(":"));
+    }
+
+    public byte[] getAddress() {
+        return address;
     }
 }

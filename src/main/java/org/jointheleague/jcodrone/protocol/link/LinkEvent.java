@@ -54,10 +54,10 @@ public class LinkEvent implements Serializable {
         switch (event) {
             case SCANNING:
                 link.clearDevices();
-                link.setDiscoveringDevices(true);
+                link.setStartedDiscovery();
                 break;
             case SCAN_STOP:
-                link.setDiscoveringDevices(false);
+                link.setStoppedDiscovery();
                 break;
             case CONNECTED:
                 link.setConnected(true);

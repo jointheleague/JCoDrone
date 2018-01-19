@@ -6,7 +6,7 @@ import org.jointheleague.jcodrone.protocol.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class LightModeColors2 implements Serializable {
+public class LightModeColors2 extends LightMode2 implements Serializable {
     private final LightModeColors mode1;
     private final LightModeColors mode2;
 

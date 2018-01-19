@@ -1,11 +1,10 @@
 package org.jointheleague.jcodrone.examples;
 
 import org.jointheleague.jcodrone.CoDrone;
+import org.jointheleague.jcodrone.DirectControl;
 import org.jointheleague.jcodrone.LightModeBuilder;
 import org.jointheleague.jcodrone.protocol.light.LightMode;
 import org.jointheleague.jcodrone.protocol.light.LightModeDrone;
-
-import java.awt.*;
 
 public class TestPorts {
     public static void main(String argx[]) {

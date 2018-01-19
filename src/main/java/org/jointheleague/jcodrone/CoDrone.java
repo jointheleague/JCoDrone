@@ -28,13 +28,14 @@ import java.util.stream.Stream;
 /**
  * A CoDrone object provides the state of the drone and the methods required to control the drone.
  */
-public class CoDrone implements AutoCloseable {
+public class CoDrone implements AutoCloseable, Killable {
     public static final int SEND_TIMEOUT = 500;
     private static final int COMMAND_RETRIES = 3;
     private static Logger log = LogManager.getLogger(CoDrone.class);
     private final Link link;
     private final Sensors sensors;
     private final Internals internals;
+    private final KillSwitch killSwitch;
     private SerialPort comPort;
     private Receiver receiver;
     private InputStream inputStream;
@@ -50,6 +51,7 @@ public class CoDrone implements AutoCloseable {
         sensors = new Sensors(this);
         internals = new Internals(this);
         receiver = new Receiver(this, link, sensors, internals);
+        killSwitch = new KillSwitch(this);
         log.info("CoDrone Setup");
     }
 
@@ -149,6 +151,9 @@ public class CoDrone implements AutoCloseable {
         }
         comPort.closePort();
         log.info("Port {} closed", comPort.getSystemPortName());
+
+        killSwitch.disable();
+        log.info("Kill switch disabled");
     }
 
     /**
@@ -646,7 +651,15 @@ public class CoDrone implements AutoCloseable {
         return (internals.getState() != null && internals.getState().isFlightMode());
     }
 
-    public void requestLinkState() throws MessageNotSentException {
+    public void requestLinkState() {
         link.requestState();
+    }
+
+    public void kill() throws KillException {
+        try {
+            stop();
+        } catch (MessageNotSentException e) {
+            throw new KillException(e);
+        }
     }
 }

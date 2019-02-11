@@ -77,4 +77,40 @@ public class IMU implements Serializable {
     public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
         sensors.setImu(this);
     }
+
+    public short getAccelX() {
+        return accelX;
+    }
+
+    public short getAccelY() {
+        return accelY;
+    }
+
+    public short getAccelZ() {
+        return accelZ;
+    }
+
+    public short getGyroRoll() {
+        return gyroRoll;
+    }
+
+    public short getGyroPitch() {
+        return gyroPitch;
+    }
+
+    public short getGyroYaw() {
+        return gyroYaw;
+    }
+
+    public short getAngleRoll() {
+        return angleRoll;
+    }
+
+    public short getAnglePitch() {
+        return anglePitch;
+    }
+
+    public short getAngleYaw() {
+        return angleYaw;
+    }
 }

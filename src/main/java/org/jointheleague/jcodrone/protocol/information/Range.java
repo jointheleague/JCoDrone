@@ -65,4 +65,28 @@ public class Range implements Serializable {
     public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
         sensors.setRange(this);
     }
+
+    public short getLeft() {
+        return left;
+    }
+
+    public short getFront() {
+        return front;
+    }
+
+    public short getRight() {
+        return right;
+    }
+
+    public short getRear() {
+        return rear;
+    }
+
+    public short getTop() {
+        return top;
+    }
+
+    public short getBottom() {
+        return bottom;
+    }
 }

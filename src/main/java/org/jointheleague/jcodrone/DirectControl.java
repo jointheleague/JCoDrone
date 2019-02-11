@@ -24,7 +24,7 @@ public class DirectControl {
     }
 
     @SuppressWarnings("unused")
-    public void setRoll(byte roll) {
+    public void setRoll(int roll) {
         if (!isValidControl(roll)) {
             throw new IllegalArgumentException();
         }
@@ -36,7 +36,7 @@ public class DirectControl {
     }
 
     @SuppressWarnings("unused")
-    public void setPitch(byte pitch) {
+    public void setPitch(int pitch) {
         if (!isValidControl(pitch)) {
             throw new IllegalArgumentException();
         }
@@ -48,7 +48,7 @@ public class DirectControl {
     }
 
     @SuppressWarnings("unused")
-    public void setYaw(byte yaw) {
+    public void setYaw(int yaw) {
         if (!isValidControl(yaw)) {
             throw new IllegalArgumentException();
         }
@@ -60,10 +60,17 @@ public class DirectControl {
     }
 
     @SuppressWarnings("unused")
-    public void setThrottle(byte throttle) {
+    public void setThrottle(int throttle) {
         if (!isValidControl(throttle)) {
             throw new IllegalArgumentException();
         }
         this.throttle = throttle;
+    }
+
+    public void setControl(DirectControl control) {
+        this.roll = control.getRoll();
+        this.pitch = control.getPitch();
+        this.yaw = control.getYaw();
+        this.throttle = control.getThrottle();
     }
 }

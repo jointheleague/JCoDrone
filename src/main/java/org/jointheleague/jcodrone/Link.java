@@ -17,6 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Link {
     public static final ModeLinkBroadcast BROADCAST_MODE = ModeLinkBroadcast.ACTIVE;
+    private static final int STATE_REQUEST_RETRIES = 3;
 
     private static Logger log = LogManager.getLogger(Link.class);
     private final CoDrone codrone;
@@ -47,24 +48,26 @@ public class Link {
     public void connect(String deviceName, Address address) throws CoDroneNotFoundException, MessageNotSentException, InterruptedException {
         // ModeLinkBroadcast.Passive mode change
         requestState();
+
+        if (mode == ModeLink.CONNECTED) {
+            if ((deviceName != null && !deviceName.isEmpty())) {
+                // Assume we're connected to the right drone? TODO
+                connected = true;
+                return;
+//            } else if (address != null) {
+            } else {
+                disconnect();
+            }
+        }
+
         for (int retries = 0; retries < 3 && getLinkBroadcastMode() != BROADCAST_MODE; retries++) {
             setBroadcastMode(BROADCAST_MODE);
-            TimeUnit.MILLISECONDS.sleep(100);
             requestState();
         }
 
         if (getLinkBroadcastMode() != BROADCAST_MODE) {
             log.error("Could not switch link to selected broadcast mode. Is red LED flashing?");
             throw new CoDroneNotFoundException();
-        }
-
-        if (mode == ModeLink.CONNECTED) {
-            // TODO If we are currently corrected to the correct drone.
-//            if ((deviceName != null && !deviceName.isEmpty())) {
-//            } else if (address != null) {
-//            } else {
-            disconnect();
-//            }
         }
 
         // start searching device
@@ -145,11 +148,11 @@ public class Link {
         // TODO Wait for ready to command
     }
 
-    public void disconnect() throws MessageNotSentException {
+    public void disconnect() {
         codrone.sendCommand(CommandType.LINK_DISCONNECT);
     }
 
-    public void resetSystem() throws MessageNotSentException {
+    public void resetSystem() {
         codrone.sendCommand(CommandType.LINK_SYSTEM_RESET);
         try {
             // TODO Alternative to sleeping for 3 seconds?
@@ -167,19 +170,19 @@ public class Link {
         codrone.sendCommand(CommandType.LINK_MODE_BROADCAST, mode.value());
     }
 
-    public void startDiscovery() throws MessageNotSentException {
+    public void startDiscovery() {
         codrone.sendCommand(CommandType.LINK_DISCOVER_START);
     }
 
-    public void stopDiscovery() throws MessageNotSentException {
+    public void stopDiscovery() {
         codrone.sendCommand(CommandType.LINK_DISCOVER_STOP);
     }
 
-    public void startRSSIPolling() throws MessageNotSentException {
+    public void startRSSIPolling() {
         codrone.sendCommand(CommandType.LINK_RSSI_POLLING_START);
     }
 
-    public void stopRSSIPolling() throws MessageNotSentException {
+    public void stopRSSIPolling() {
         codrone.sendCommand(CommandType.LINK_RSSI_POLLING_STOP);
     }
 
@@ -199,8 +202,16 @@ public class Link {
         return address;
     }
 
-    public void requestState() {
+    public void requestState() throws InterruptedException {
+        this.mode = ModeLink.NONE;
         codrone.sendCommand(CommandType.REQUEST, DataType.LINK_STATE.value());
+        int attempt = 0;
+        Thread.sleep(100);
+        while (mode == ModeLink.NONE && attempt < STATE_REQUEST_RETRIES) {
+            codrone.sendCommand(CommandType.REQUEST, DataType.LINK_STATE.value());
+            attempt++;
+            Thread.sleep(100);
+        }
     }
 
 

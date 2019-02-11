@@ -49,4 +49,5 @@ public class Control implements Serializable {
 
         return new Control(roll, pitch, yaw, throttle);
     }
+
 }

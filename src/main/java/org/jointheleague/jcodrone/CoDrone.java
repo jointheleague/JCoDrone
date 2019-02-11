@@ -13,15 +13,14 @@ import org.jointheleague.jcodrone.protocol.light.LightEvent;
 import org.jointheleague.jcodrone.protocol.light.LightEventColors;
 import org.jointheleague.jcodrone.protocol.light.LightMode;
 import org.jointheleague.jcodrone.protocol.light.LightModeColors;
-import org.jointheleague.jcodrone.receiver.CRC16;
 import org.jointheleague.jcodrone.receiver.Receiver;
+import org.jointheleague.jcodrone.sender.Sender;
 import org.jointheleague.jcodrone.system.ModeVehicle;
 
-import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.util.Optional;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,18 +28,26 @@ import java.util.stream.Stream;
  * A CoDrone object provides the state of the drone and the methods required to control the drone.
  */
 public class CoDrone implements AutoCloseable, Killable {
-    public static final int SEND_TIMEOUT = 500;
+    private static final int SEND_TIMEOUT = 500;
     private static final int COMMAND_RETRIES = 3;
+    private static final String CP_2104_USB_TO_UART_BRIDGE_CONTROLLER = "CP2104 USB to UART Bridge Controller";
+
     private static Logger log = LogManager.getLogger(CoDrone.class);
+    private static SerialPort[] ports = SerialPort.getCommPorts();
+
     private final Link link;
     private final Sensors sensors;
     private final Internals internals;
     private final KillSwitch killSwitch;
+
     private SerialPort comPort;
+
     private Receiver receiver;
     private InputStream inputStream;
     private boolean stopped = true;
     private Thread readThread;
+    private final LinkedBlockingQueue<Serializable> commandQueue = new LinkedBlockingQueue<>();
+    private DirectControl oldControl = new DirectControl(0, 0, 0, 0);
 
     /**
      * The default constructor establishes creates an unassigned drone object that can be connected to any
@@ -55,23 +62,25 @@ public class CoDrone implements AutoCloseable, Killable {
         log.info("CoDrone Setup");
     }
 
-    private void open() {
+    private void open() throws BluetoothBoardNotFoundException {
         log.info("Connect without explicit port.");
-        SerialPort[] ports = SerialPort.getCommPorts();
 
         if (log.isDebugEnabled()) {
             log.debug("List of available ports: \n\t{}",
-                    Stream.of(ports)
-                            .map(p ->
-                                    String.format("%s: %s",
-                                            p.getSystemPortName(),
-                                            p.getDescriptivePortName()
-                                    )
-                            ).collect(Collectors.joining("\n\t")));
+                    getPortNames().collect(Collectors.joining("\n\t")));
         }
 
         if (ports.length > 0) {
-            open(ports[ports.length - 1].getSystemPortName());
+            Optional<String> defaultPort = Stream.of(ports)
+                    .filter(p -> p.getDescriptivePortName().equals(CP_2104_USB_TO_UART_BRIDGE_CONTROLLER))
+                    .findFirst()
+                    .map(SerialPort::getSystemPortName);
+
+            if (defaultPort.isPresent()) {
+                open(defaultPort.get());
+            } else {
+                throw new BluetoothBoardNotFoundException();
+            }
         }
     }
 
@@ -84,6 +93,8 @@ public class CoDrone implements AutoCloseable, Killable {
         comPort.setNumDataBits(8);
         comPort.openPort();
         comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 100, 0);
+        Sender sender = new Sender(comPort, commandQueue);
+        sender.start();
         inputStream = comPort.getInputStream();
 
         readThread = new Thread(() -> {
@@ -125,7 +136,7 @@ public class CoDrone implements AutoCloseable, Killable {
             } catch (MessageNotSentException e) {
                 log.error("Could not stop drone in close", e);
             } catch (InterruptedException e) {
-                continue;
+                log.info("Sleep interrupted waiting for close", e);
             }
         }
 
@@ -133,9 +144,8 @@ public class CoDrone implements AutoCloseable, Killable {
         try {
             link.disconnect();
             Thread.sleep(500);
-        } catch (MessageNotSentException e) {
-            log.error("Could not disconnect bluetooth link", e);
         } catch (InterruptedException e) {
+            log.info("Sleep interrupted waiting for disconnect", e);
         }
 
         log.info("Closing serial port.");
@@ -156,40 +166,72 @@ public class CoDrone implements AutoCloseable, Killable {
         log.info("Kill switch disabled");
     }
 
-    /**
-     * The default connection method connects to the nearest drone connected to the last available serial port
-     * enumerated by the operating system.
-     *
-     * @throws CoDroneNotFoundException Thrown if no drone is found. Check logs to determine what serial port was used.
-     */
-    public void connect() throws CoDroneNotFoundException, MessageNotSentException, InterruptedException {
-        connectPort(null);
-        link(null);
-    }
 
-    /**
-     * The default connection method connects to the nearest drone connected to the last available serial port
-     * enumerated by the operating system.
-     *
-     * @throws CoDroneNotFoundException Thrown if no drone is found. Check logs to determine what serial port was used.
-     */
-    public void connect(String deviceName) {
-        if (deviceName != null && !deviceName.isEmpty() && deviceName.length() != 12) {
-            throw new IllegalArgumentException(
-                    String.format("Invalid device name length %s.", deviceName.length()));
+    private void makeConnection(String portName, String deviceName, Address address) throws BluetoothBoardNotFoundException, MessageNotSentException, InterruptedException, CoDroneNotFoundException {
+        connectPort(portName);
+        if (deviceName != null) {
+            link(deviceName);
+        } else {
+            link(address);
         }
-
-        connectPort(null);
     }
 
     /**
-     * The default connection method connects to the nearest drone connected to the last available serial port
-     * enumerated by the operating system.
+     * Connect to the nearest drone connected to the first available CP2104 port enumerated by the operating system.
      *
      * @throws CoDroneNotFoundException Thrown if no drone is found. Check logs to determine what serial port was used.
      */
-    public void connect(Address address) {
-        connectPort(null);
+    @SuppressWarnings("unused")
+    public void connectVia(String portName) throws CoDroneNotFoundException, MessageNotSentException, InterruptedException, BluetoothBoardNotFoundException {
+        makeConnection(portName, null, null);
+    }
+
+    /**
+     * Connect to the named drone via connected to the first available CP2104 port enumerated by the operating system.
+     *
+     * @throws CoDroneNotFoundException Thrown if no drone is found. Check logs to determine what serial port was used.
+     */
+    @SuppressWarnings("unused")
+    public void connectVia(String portName, String deviceName) throws BluetoothBoardNotFoundException, MessageNotSentException, InterruptedException, CoDroneNotFoundException {
+        makeConnection(portName, deviceName, null);
+    }
+
+    /**
+     * Connects to the addressed drone via connected to the first available CP2104 port enumerated by the operating system.
+     *
+     * @throws BluetoothBoardNotFoundException Thrown if no drone is found. Check logs to determine what serial port was used.
+     */
+    @SuppressWarnings("unused")
+    public void connectVia(String portName, Address address) throws BluetoothBoardNotFoundException, MessageNotSentException, InterruptedException, CoDroneNotFoundException {
+        makeConnection(portName, null, address);
+    }
+
+    /**
+     * Connect to the nearest drone connected to the first available CP2104 port enumerated by the operating system.
+     *
+     * @throws CoDroneNotFoundException Thrown if no drone is found. Check logs to determine what serial port was used.
+     */
+    public void connect() throws CoDroneNotFoundException, MessageNotSentException, InterruptedException, BluetoothBoardNotFoundException {
+        makeConnection(null, null, null);
+    }
+
+    /**
+     * Connect to the named drone via connected to the first available CP2104 port enumerated by the operating system.
+     *
+     * @throws CoDroneNotFoundException Thrown if no drone is found. Check logs to determine what serial port was used.
+     */
+    public void connect(String deviceName) throws BluetoothBoardNotFoundException, MessageNotSentException, InterruptedException, CoDroneNotFoundException {
+        makeConnection(null, deviceName, null);
+    }
+
+    /**
+     * Connects to the addressed drone via connected to the first available CP2104 port enumerated by the operating system.
+     *
+     * @throws BluetoothBoardNotFoundException Thrown if no drone is found. Check logs to determine what serial port was used.
+     */
+    @SuppressWarnings("unused")
+    public void connect(Address address) throws BluetoothBoardNotFoundException, MessageNotSentException, InterruptedException, CoDroneNotFoundException {
+        makeConnection(null, null, address);
     }
 
     /**
@@ -197,9 +239,9 @@ public class CoDrone implements AutoCloseable, Killable {
      * to the specified serial port. Additionally the controller can be reset before the connection is attempted.
      *
      * @param portName System name of the serial port connected to the controller.
-     * @throws CoDroneNotFoundException Thrown if the specified port or drone can not be found.
+     * @throws BluetoothBoardNotFoundException Thrown if the specified port can not be found.
      */
-    private void connectPort(String portName) {
+    private void connectPort(String portName) throws BluetoothBoardNotFoundException {
         if (comPort == null || !comPort.isOpen()) {
             if (portName == null || portName.isEmpty()) {
                 open();
@@ -216,35 +258,8 @@ public class CoDrone implements AutoCloseable, Killable {
         link.connect(deviceName);
     }
 
-    void transfer(Header header, Serializable data) {
-        if ((header == null) || (data == null)) {
-            log.error("Header or data was null.");
-            throw new InvalidMessageException("Header or data is null.");
-        }
-
-        int crc16 = 0;
-        crc16 = CRC16.calc(header.toArray(), crc16);
-        crc16 = CRC16.calc(data.toArray(), crc16);
-
-        byte[] headerArray = header.toArray();
-        byte[] dataArray = data.toArray();
-
-        ByteBuffer message = ByteBuffer.allocate(2 + headerArray.length + dataArray.length + 2);
-        message.order(ByteOrder.LITTLE_ENDIAN);
-        message.put((byte) 0x0A);
-        message.put((byte) 0x55);
-        message.put(headerArray);
-        message.put(dataArray);
-        message.putShort((short) crc16);
-
-        comPort.writeBytes(message.array(), message.capacity());
-        log.info("Sent: {}", DatatypeConverter.printHexBinary(message.array()));
-        // TODO: Remove this wait
-        try {
-            Thread.sleep(60);
-        } catch (InterruptedException e) {
-            log.warn("Sleep interrupted after sending command.");
-        }
+    private void link(Address address) throws MessageNotSentException, CoDroneNotFoundException, InterruptedException {
+        link.connect(address);
     }
 
 
@@ -257,6 +272,7 @@ public class CoDrone implements AutoCloseable, Killable {
      *
      * @param type The command from the CommandType enumeration.
      */
+    @SuppressWarnings("WeakerAccess")
     public void sendCommand(CommandType type) {
         sendCommand(type, (byte) 0);
     }
@@ -270,6 +286,7 @@ public class CoDrone implements AutoCloseable, Killable {
      *
      * @param type The command from the CommandType enumeration.
      */
+    @SuppressWarnings("WeakerAccess")
     public void sendCommand(CommandType type, byte option) {
         Command command = new Command(type, option);
 
@@ -285,6 +302,7 @@ public class CoDrone implements AutoCloseable, Killable {
      *
      * @param type The command from the CommandType enumeration.
      */
+    @SuppressWarnings("unused")
     public void sendCommandWait(CommandType type) throws MessageNotSentException {
         sendCommandWait(type, (byte) 0);
     }
@@ -298,33 +316,30 @@ public class CoDrone implements AutoCloseable, Killable {
      *
      * @param type The command from the CommandType enumeration.
      */
+    @SuppressWarnings("WeakerAccess")
     public void sendCommandWait(CommandType type, byte option) throws MessageNotSentException {
         Command command = new Command(type, option);
 
         sendMessageWait(command);
     }
 
-    @SuppressWarnings("unused")
     void sendMessage(Serializable message) {
-        Header header = new Header(DataType.fromClass(message.getClass()), message.getInstanceSize());
-        transfer(header, message);
+        commandQueue.offer(message);
     }
 
-    @SuppressWarnings("unused")
     void sendMessageWait(Serializable message) throws MessageNotSentException {
         Header header = new Header(DataType.fromClass(message.getClass()), message.getInstanceSize());
 
         boolean messageSent = false;
         int tries = 0;
         while (!messageSent && tries < 3) {
-            Object ackLock = receiver.getAckLock(header.getDataType());
-            synchronized (ackLock) {
+            synchronized (receiver.getAckLock(header.getDataType())) {
                 tries++;
-                transfer(header, message);
+                commandQueue.offer(message);
                 long sentTime = System.nanoTime();
                 while (!messageSent && (sentTime + SEND_TIMEOUT) > System.nanoTime()) {
                     try {
-                        ackLock.wait();
+                        receiver.getAckLock(header.getDataType()).wait();
                         messageSent = true;
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -338,6 +353,21 @@ public class CoDrone implements AutoCloseable, Killable {
         }
     }
 
+    /**
+     * Returns a list of ports and their descriptive names.
+     *
+     * @return a Stream of strings with ports and descriptive names
+     */
+    @SuppressWarnings("WeakerAccess")
+    public Stream<String> getPortNames() {
+        return Stream.of(ports)
+                .map(p ->
+                        String.format("%s: %s",
+                                p.getSystemPortName(),
+                                p.getDescriptivePortName()
+                        )
+                );
+    }
 
     /**
      * Sends a command to set the drone's mode to flight mode with guard installed.
@@ -369,6 +399,38 @@ public class CoDrone implements AutoCloseable, Killable {
     @SuppressWarnings("unused")
     public void setDriveMode() throws MessageNotSentException {
         sendCommandWait(CommandType.MODE_VEHICLE, ModeVehicle.DRIVE.value());
+    }
+
+    /**
+     * Requests drone state
+     */
+    @SuppressWarnings("WeakerAccess")
+    public void requestState() throws MessageNotSentException {
+        Request.state(this);
+    }
+
+    /**
+     * Requests drone range
+     */
+    @SuppressWarnings("WeakerAccess")
+    public void requestRange() throws MessageNotSentException {
+        Request.range(this);
+    }
+
+    /**
+     * Requests drone IMU
+     */
+    @SuppressWarnings("WeakerAccess")
+    public void requestIMU() throws MessageNotSentException {
+        Request.IMU(this);
+    }
+
+    /**
+     * Requests drone Image Flow
+     */
+    @SuppressWarnings("WeakerAccess")
+    public void requestImageFlow() throws MessageNotSentException {
+        Request.ImageFlow(this);
     }
 
     /**
@@ -422,7 +484,7 @@ public class CoDrone implements AutoCloseable, Killable {
     /**
      * Sends a command to make the drone stop the motors. This command should be used to implement a kill switch.
      */
-    @SuppressWarnings("unused")
+    @SuppressWarnings("WeakerAccess")
     public void stop() throws MessageNotSentException {
         Flight.stop(this);
     }
@@ -453,7 +515,10 @@ public class CoDrone implements AutoCloseable, Killable {
     }
 
     public void flyDirect(DirectControl control) {
-        Flight.flyDirect(this, control);
+        if (!control.equals(oldControl)) {
+            Flight.flyDirect(this, control);
+            oldControl.setControl(control);
+        }
     }
 
     /**
@@ -592,12 +657,14 @@ public class CoDrone implements AutoCloseable, Killable {
     }
 
     @SuppressWarnings("unused")
-    public ImageFlow getImageFlow() {
+    public ImageFlow getImageFlow() throws MessageNotSentException {
+        this.requestImageFlow();
         return sensors.getImageFlow();
     }
 
     @SuppressWarnings("unused")
-    public IMU getImu() {
+    public IMU getImu() throws MessageNotSentException {
+        this.requestIMU();
         return sensors.getImu();
     }
 
@@ -618,11 +685,21 @@ public class CoDrone implements AutoCloseable, Killable {
 
     @SuppressWarnings("unused")
     public Range getRange() {
+        try {
+            this.requestRange();
+        } catch (MessageNotSentException e) {
+            e.printStackTrace();
+        }
         return sensors.getRange();
     }
 
     @SuppressWarnings("unused")
     public State getState() {
+        try {
+            this.requestState();
+        } catch (MessageNotSentException e) {
+            log.warn("Unable to request state.", e);
+        }
         return internals.getState();
     }
 
@@ -651,7 +728,8 @@ public class CoDrone implements AutoCloseable, Killable {
         return (internals.getState() != null && internals.getState().isFlightMode());
     }
 
-    public void requestLinkState() {
+    @SuppressWarnings("unused")
+    public void requestLinkState() throws InterruptedException {
         link.requestState();
     }
 

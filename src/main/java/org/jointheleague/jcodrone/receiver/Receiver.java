@@ -34,7 +34,7 @@ public class Receiver {
         this.sensors = sensors;
         this.internals = internals;
         this.state = StateMap.START1;
-        this.ackLocks = new Object[CommandType.values().length];
+        this.ackLocks = new Object[255];
         for (int i = 0; i < CommandType.values().length; i++) {
             this.ackLocks[i] = new Object();
         }

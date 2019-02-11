@@ -49,4 +49,12 @@ public class ImageFlow implements Serializable {
     public void handle(CoDrone coDrone, Link link, Sensors sensors, Internals internals) {
         sensors.setImageFlow(this);
     }
+
+    public int getPositionX() {
+        return positionX;
+    }
+
+    public int getPositionY() {
+        return positionY;
+    }
 }

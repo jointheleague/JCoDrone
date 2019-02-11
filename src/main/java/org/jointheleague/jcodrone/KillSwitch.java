@@ -32,6 +32,7 @@ public class KillSwitch implements KeyListener {
                 frame.setBackground(new Color(0, 0, 0, 0));
                 frame.setVisible(true);
                 frame.setFocusable(true);
+                frame.setAlwaysOnTop(true);
             }
         });
     }

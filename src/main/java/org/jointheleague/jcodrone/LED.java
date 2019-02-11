@@ -22,7 +22,11 @@ public class LED {
         }
         Header header = new Header(dataType, mode.getInstanceSize());
 
-        coDrone.transfer(header, mode);
+        try {
+            coDrone.sendMessageWait(mode);
+        } catch (MessageNotSentException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void setMode2(CoDrone coDrone, LightMode mode1, LightMode mode2, boolean defaultColor) {
@@ -52,7 +56,7 @@ public class LED {
         }
 
         header = new Header(dataType, message.getInstanceSize());
-        coDrone.transfer(header, message);
+        coDrone.sendMessage(message);
     }
 
     public static void setModeCommand(CoDrone coDrone, LightModeColors mode, CommandType commandType, byte option) {
@@ -60,7 +64,7 @@ public class LED {
         Command command = new Command(commandType, option);
         LightModeCommand lightModeCommand = new LightModeCommand(mode, command);
 
-        coDrone.transfer(header, lightModeCommand);
+        coDrone.sendMessage(lightModeCommand);
     }
 
     public static void setLightModeCommandIR(CoDrone coDrone, LightModeColors mode, CommandType commandType, byte option, int irData) {
@@ -68,12 +72,12 @@ public class LED {
         Command command = new Command(commandType, option);
         LightModeCommandIR lightModeCommandIr = new LightModeCommandIR(mode, command, irData);
 
-        coDrone.transfer(header, lightModeCommandIr);
+        coDrone.sendMessage(lightModeCommandIr);
     }
 
     public static void setLightEvent(CoDrone coDrone, LightEvent event) {
         Header header = new Header(DataType.fromClass(event.getClass()), event.getInstanceSize());
-        coDrone.transfer(header, event);
+        coDrone.sendMessage(event);
     }
 
     public static void setLightEventCommand(CoDrone coDrone, LightEventColors event, CommandType commandType, byte option) {
@@ -82,7 +86,7 @@ public class LED {
 
         LightEventCommand lightEventCommand = new LightEventCommand(event, command);
 
-        coDrone.transfer(header, lightEventCommand);
+        coDrone.sendMessage(lightEventCommand);
     }
 
     public static void setLightEventCommandIR(CoDrone coDrone, LightEventColors event, CommandType commandType, byte option, int irData) {
@@ -91,6 +95,6 @@ public class LED {
 
         LightEventCommandIR lightEventCommandIR = new LightEventCommandIR(event, command, irData);
 
-        coDrone.transfer(header, lightEventCommandIR);
+        coDrone.sendMessage(lightEventCommandIR);
     }
 }
